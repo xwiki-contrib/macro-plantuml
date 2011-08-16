@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package>
+<infos/>
+<name>PlantUMLMacro-1.0</name>
+<description>PlantUMLMacro macro enables you to include UML diagrams inside your wiki pages using PlantUML tool.</description>
+<licence>LGPL</licence>
+<author>XWiki.Admin</author>
+<version></version>
+<backupPack>false</backupPack>
+<preserveVersion>false</preserveVersion><files>
+<file defaultAction="0" language="">XWiki.PlantUMLConfigurationClass</file>
+<file defaultAction="0" language="">XWiki.PlantUMLMacro</file>
+<file defaultAction="0" language="">XWiki.PlantUMLMacroGClass</file></files></package>
