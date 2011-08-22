@@ -274,19 +274,35 @@ class AsciiEncoder {
 }
 
 // STARTING POINT
+// Get the uml script
+def umltext = xcontext.macro.content
+
+// Add the optional 'include' content
+def include = xcontext.macro.params.include
+if (include) {
+    def incDoc = xwiki.getDocument(include)
+    if (incDoc != null) {
+        umltext = incDoc.content + "\n" + umltext
+    } else {
+        println "**PlantUMLMacro WARNING**: Can't include page "+include
+    }
+}
+
 // Get the configured server
 def macrodoc = xcontext.getMacro().get("doc")
 def serverurl
 if (macrodoc.getObject("XWiki.PlantUMLConfigurationClass") != null) {
     serverurl = macrodoc.getObject("XWiki.PlantUMLConfigurationClass").get("Server")
 }
+
+
 if (serverurl == "") { // Uses the internal PlantUMLMacroGClass groovy implementation
     gObj = xwiki.parseGroovyFromPage( "XWiki.PlantUMLMacroGClass", "XWiki.PlantUMLMacroGClass")
-    gObj.setObjects(doc, xcontext)
+    gObj.setObjects(doc, xcontext, umltext)
     println gObj.run( request, response)
 } else { // Uses the external configured PlantUML server
     // Encode the UML content
-    byte[] data = xcontext.macro.content.getBytes("UTF-8")
+    byte[] data = umltext.getBytes("UTF-8")
     byte[] compressed = compress(data)
     String encoded = new AsciiEncoder().encode(compressed)
     // Output the image wiki tag
@@ -295,7 +311,7 @@ if (serverurl == "") { // Uses the internal PlantUMLMacroGClass groovy implement
 {{/groovy}}</code>
 </property>
 <property>
-<contentDescription>The diagram definition using PlanUML's syntax</contentDescription>
+<contentDescription>The diagram definition using PlanUML's syntax.</contentDescription>
 </property>
 <property>
 <contentType>Mandatory</contentType>
@@ -304,7 +320,7 @@ if (serverurl == "") { // Uses the internal PlantUMLMacroGClass groovy implement
 <defaultCategory>content</defaultCategory>
 </property>
 <property>
-<description>Generate Diagrams using PlantUML</description>
+<description>Generate Diagrams using PlantUML.</description>
 </property>
 <property>
 <id>plantuml</id>
@@ -317,6 +333,72 @@ if (serverurl == "") { // Uses the internal PlantUMLMacroGClass groovy implement
 </property>
 <property>
 <visibility>Global</visibility>
+</property>
+</object>
+<object>
+<class>
+<name>XWiki.WikiMacroParameterClass</name>
+<customClass></customClass>
+<customMapping></customMapping>
+<defaultViewSheet></defaultViewSheet>
+<defaultEditSheet></defaultEditSheet>
+<defaultWeb></defaultWeb>
+<nameField></nameField>
+<validationScript></validationScript>
+<defaultValue>
+<disabled>0</disabled>
+<name>defaultValue</name>
+<number>4</number>
+<prettyName>Parameter default value</prettyName>
+<size>30</size>
+<unmodifiable>0</unmodifiable>
+<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+</defaultValue>
+<description>
+<disabled>0</disabled>
+<name>description</name>
+<number>2</number>
+<prettyName>Parameter description</prettyName>
+<rows>5</rows>
+<size>40</size>
+<unmodifiable>0</unmodifiable>
+<classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+</description>
+<mandatory>
+<disabled>0</disabled>
+<displayFormType>select</displayFormType>
+<displayType>yesno</displayType>
+<name>mandatory</name>
+<number>3</number>
+<prettyName>Parameter mandatory</prettyName>
+<unmodifiable>0</unmodifiable>
+<classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+</mandatory>
+<name>
+<disabled>0</disabled>
+<name>name</name>
+<number>1</number>
+<prettyName>Parameter name</prettyName>
+<size>30</size>
+<unmodifiable>0</unmodifiable>
+<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+</name>
+</class>
+<name>XWiki.PlantUMLMacro</name>
+<number>0</number>
+<className>XWiki.WikiMacroParameterClass</className>
+<guid>cddb79cf-ee98-4c20-9123-f27b54e577cc</guid>
+<property>
+<defaultValue></defaultValue>
+</property>
+<property>
+<description>The content of the specified wiki page will be inserted at the begining of the diagram definition.</description>
+</property>
+<property>
+<mandatory>0</mandatory>
+</property>
+<property>
+<name>include</name>
 </property>
 </object>
 <content>This macro enables you to include UML diagrams inside your wiki pages using **PlantUML** ([[http://plantuml.sourceforge.net]]).
