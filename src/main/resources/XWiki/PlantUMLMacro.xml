@@ -55,41 +55,6 @@
 </object>
 <object>
 <class>
-<name>XWiki.TagClass</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<tags>
-<cache>0</cache>
-<disabled>0</disabled>
-<displayType>input</displayType>
-<multiSelect>1</multiSelect>
-<name>tags</name>
-<number>1</number>
-<prettyName>Tags</prettyName>
-<relationalStorage>1</relationalStorage>
-<separator>|</separator>
-<separators>|,</separators>
-<size>30</size>
-<unmodifiable>0</unmodifiable>
-<values></values>
-<classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-</tags>
-</class>
-<name>XWiki.PlantUMLMacro</name>
-<number>0</number>
-<className>XWiki.TagClass</className>
-<guid>66b0a9ba-f5ae-42a9-86e4-2524b89ed62e</guid>
-<property>
-<tags/>
-</property>
-</object>
-<object>
-<class>
 <name>XWiki.WikiMacroClass</name>
 <customClass></customClass>
 <customMapping></customMapping>
@@ -302,7 +267,7 @@ if (include) {
 def macrodoc = xcontext.getMacro().get("doc")
 def serverurl
 if (macrodoc.getObject("XWiki.PlantUMLConfigurationClass") != null) {
-    serverurl = macrodoc.getObject("XWiki.PlantUMLConfigurationClass").get("Server")
+    serverurl = macrodoc.getObject('XWiki.PlantUMLConfigurationClass').getProperty('Server').value
 }
 
 
