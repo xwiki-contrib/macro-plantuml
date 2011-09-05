@@ -273,6 +273,16 @@ class AsciiEncoder {
     }
 }
 
+// Utility method to insert content in the uml script taking care of the @start marker.
+String insertHeader( String header, String origin) {
+    def m = origin =~ /(?s)(@start[a-z]++)(.*)/
+    if (m.matches()) {
+        return m[0][1] + "\n" + header + "\n" + m[0][2]
+    } else {
+        return header + "\n" + origin
+    }
+}
+
 // STARTING POINT
 // Get the uml script
 def umltext = xcontext.macro.content
@@ -282,7 +292,7 @@ def include = xcontext.macro.params.include
 if (include) {
     def incDoc = xwiki.getDocument(include)
     if (!incDoc.isNew()) {
-        umltext = incDoc.content + "\n" + umltext
+        umltext = insertHeader(incDoc.content, umltext)
     } else {
         println "**PlantUMLMacro WARNING**: Can't include page "+include
     }
