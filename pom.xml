@@ -31,7 +31,7 @@
   </parent>
   <groupId>org.xwiki.contrib</groupId>
   <artifactId>xwiki-macro-plantuml</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>xar</packaging>
   <name>Contrib - Macros - PlantUML</name>
   <description>A macro for rendering UML diagrams from simple textual schemes.</description>
