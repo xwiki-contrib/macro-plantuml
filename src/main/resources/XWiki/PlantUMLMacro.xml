@@ -272,7 +272,7 @@ if (macrodoc.getObject("XWiki.PlantUMLConfigurationClass") != null) {
 
 
 if (serverurl == "") { // Uses the internal PlantUMLMacroGClass groovy implementation
-    gObj = xwiki.parseGroovyFromPage( "XWiki.PlantUMLMacroGClass", "XWiki.PlantUMLMacroGClass")
+    gObj = xwiki.parseGroovyFromPage( macrodoc.getWiki()+':XWiki.PlantUMLMacroGClass', macrodoc.getWiki()+':XWiki.PlantUMLMacroGClass')
     gObj.setObjects(doc, xcontext, umltext)
     println gObj.run( request, response)
 } else { // Uses the external configured PlantUML server
