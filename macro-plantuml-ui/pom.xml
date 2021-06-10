@@ -34,10 +34,9 @@
   <description>Convert various text input formats into diagram images using PlantUML</description>
   <properties>
     <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
+    <xwiki.extension.name>PlantUML Administration</xwiki.extension.name>
     <!-- The extension's category -->
-    <xwiki.extension.category>macro</xwiki.extension.category>
-
+    <xwiki.extension.category>application</xwiki.extension.category>
   </properties>
   <dependencies>
     <dependency>

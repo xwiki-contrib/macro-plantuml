@@ -32,6 +32,12 @@
   <packaging>jar</packaging>
   <name>PlantUML Macro - API</name>
   <description>Macro and API to generate diagram images using PlantUML</description>
+  <properties>
+    <!-- Name to display by the Extension Manager -->
+    <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
+    <!-- The extension's category -->
+    <xwiki.extension.category>macro</xwiki.extension.category>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
