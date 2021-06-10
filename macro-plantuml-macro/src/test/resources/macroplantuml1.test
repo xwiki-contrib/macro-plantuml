@@ -1,0 +1,22 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Test the PlantUML macro called without parameters
+.#-----------------------------------------------------
+{{plantuml}}
+@startuml
+Bob -> Alice : hello
+@enduml
+{{/plantuml}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [plantuml] [] [@startuml
+Bob -> Alice : hello
+@enduml]
+onImage [Typed = [true] Type = [url] Reference = [http://temporaryURL/plantuml/1352549007185.png]] [false]
+endMacroMarkerStandalone [plantuml] [] [@startuml
+Bob -> Alice : hello
+@enduml]
+endDocument

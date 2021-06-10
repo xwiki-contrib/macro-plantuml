@@ -1,0 +1,4 @@
+org.xwiki.contrib.plantuml.internal.DefaultPlantUMLGenerator
+org.xwiki.contrib.plantuml.internal.PlantUMLMacro
+org.xwiki.contrib.plantuml.internal.PlantUMLBlockAsyncRenderer
+org.xwiki.contrib.plantuml.internal.store.TemporaryImageWriter

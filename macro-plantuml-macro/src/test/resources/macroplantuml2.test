@@ -1,0 +1,22 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.0
+.# Test the PlantUML macro with a PlantUML server
+.#-----------------------------------------------------
+{{plantuml server="http://localhost:8777"}}
+@startuml
+Bob -> Alice : hello
+@enduml
+{{/plantuml}}
+.#-----------------------------------------------------
+.expect|event/1.0
+.#-----------------------------------------------------
+beginDocument
+beginMacroMarkerStandalone [plantuml] [server=http://localhost:8777] [@startuml
+Bob -> Alice : hello
+@enduml]
+onImage [Typed = [true] Type = [url] Reference = [http://temporaryURL/plantuml/13525490071860033777.png]] [false]
+endMacroMarkerStandalone [plantuml] [server=http://localhost:8777] [@startuml
+Bob -> Alice : hello
+@enduml]
+endDocument

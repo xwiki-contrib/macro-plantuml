@@ -1,0 +1,104 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.xwiki.contrib.plantuml.internal;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+
+import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
+import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
+import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
+import org.xwiki.rendering.block.Block;
+import org.xwiki.rendering.block.CompositeBlock;
+import org.xwiki.rendering.macro.AbstractMacro;
+import org.xwiki.rendering.macro.MacroExecutionException;
+import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
+import org.xwiki.rendering.transformation.MacroTransformationContext;
+
+/**
+ * Asynchronous macro that generates an image from a textual description, using PlantUML.
+ *
+ * @version $Id$
+ * @since 2.0
+ */
+@Component
+@Named("plantuml")
+@Singleton
+public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
+{
+    /**
+     * The description of the macro.
+     */
+    private static final String DESCRIPTION =
+        "Convert various text input formats into diagram images using PlantUML.";
+
+    /**
+     * The description of the macro content.
+     */
+    private static final String CONTENT_DESCRIPTION = "The textual definition of the diagram";
+
+    @Inject
+    private BlockAsyncRendererExecutor executor;
+
+    @Inject
+    private Provider<PlantUMLBlockAsyncRenderer> asyncRendererProvider;
+
+    /**
+     * Create and initialize the descriptor of the macro.
+     */
+    public PlantUMLMacro()
+    {
+        super("PlantUML", DESCRIPTION, new DefaultContentDescriptor(CONTENT_DESCRIPTION),
+            PlantUMLMacroParameters.class);
+        setDefaultCategory(DEFAULT_CATEGORY_CONTENT);
+    }
+
+    @Override
+    public boolean supportsInlineMode()
+    {
+        return false;
+    }
+
+    @Override
+    public List<Block> execute(PlantUMLMacroParameters parameters, String content, MacroTransformationContext context)
+        throws MacroExecutionException
+    {
+        PlantUMLBlockAsyncRenderer renderer = this.asyncRendererProvider.get();
+        renderer.initialize(parameters, content, context);
+
+        AsyncRendererConfiguration configuration = new AsyncRendererConfiguration();
+
+        // Execute the renderer
+        Block result;
+        try {
+            result = this.executor.execute(renderer, configuration);
+        } catch (Exception e) {
+            throw new MacroExecutionException("Failed to execute the PlantUML macro", e);
+        }
+
+        return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
+    }
+}
