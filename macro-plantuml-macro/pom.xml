@@ -37,7 +37,7 @@
     <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
     <!-- The extension's category -->
     <xwiki.extension.category>macro</xwiki.extension.category>
-    <xwiki.jacoco.instructionRatio>0.76</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.73</xwiki.jacoco.instructionRatio>
   </properties>
   <dependencies>
     <dependency>
