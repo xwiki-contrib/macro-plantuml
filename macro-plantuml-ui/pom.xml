@@ -31,7 +31,7 @@
   <artifactId>macro-plantuml-ui</artifactId>
   <packaging>xar</packaging>
   <name>PlantUML Macro - UI</name>
-  <description>Convert various text input formats into diagram images using PlantUML</description>
+  <description>Administration UI for the PlantUML Macro</description>
   <properties>
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>PlantUML Administration</xwiki.extension.name>

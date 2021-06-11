@@ -31,6 +31,7 @@ import org.xwiki.environment.internal.StandardEnvironment;
 import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.observation.EventListener;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.test.XWikiTempDirUtil;
@@ -104,5 +105,10 @@ public class IntegrationTests
 
         StandardEnvironment environment = componentManager.getInstance(Environment.class);
         environment.setTemporaryDirectory(XWikiTempDirUtil.createTemporaryDirectory());
+
+        componentManager.unregisterComponent(EventListener.class, "refactoring.automaticRedirectCreator");
+        componentManager.unregisterComponent(EventListener.class, "refactoring.relativeLinksUpdater");
+        componentManager.unregisterComponent(EventListener.class, "refactoring.backLinksUpdater");
+        componentManager.registerMockComponent(PlantUMLConfiguration.class);
     }
 }

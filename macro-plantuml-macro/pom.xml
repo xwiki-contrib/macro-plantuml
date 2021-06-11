@@ -37,6 +37,7 @@
     <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
     <!-- The extension's category -->
     <xwiki.extension.category>macro</xwiki.extension.category>
+    <xwiki.jacoco.instructionRatio>0.76</xwiki.jacoco.instructionRatio>
   </properties>
   <dependencies>
     <dependency>
@@ -68,6 +69,11 @@
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
       <version>5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-configuration-default</artifactId>
+      <version>${platform.version}</version>
     </dependency>
     <!-- Test Dependencies -->
     <dependency>

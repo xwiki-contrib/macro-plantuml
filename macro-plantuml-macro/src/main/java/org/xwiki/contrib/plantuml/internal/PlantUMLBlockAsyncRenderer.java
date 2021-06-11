@@ -19,33 +19,24 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
-import org.xwiki.contrib.plantuml.internal.store.ImageId;
-import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.async.AsyncContext;
 import org.xwiki.rendering.async.internal.block.AbstractBlockAsyncRenderer;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.CompositeBlock;
-import org.xwiki.rendering.block.ImageBlock;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.MacroMarkerBlock;
 import org.xwiki.rendering.block.MetaDataBlock;
 import org.xwiki.rendering.block.match.MetadataBlockMatcher;
 import org.xwiki.rendering.listener.MetaData;
-import org.xwiki.rendering.listener.reference.ResourceReference;
-import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
@@ -73,13 +64,6 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
     @Inject
     private ErrorBlockGenerator errorBlockGenerator;
 
-    @Inject
-    private PlantUMLGenerator plantUMLGenerator;
-
-    @Inject
-    @Named("tmp")
-    private ImageWriter imageWriter;
-
     private List<String> id;
 
     private Syntax targetSyntax;
@@ -88,16 +72,16 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
 
     private String content;
 
-    private MacroTransformationContext context;
-
     private DocumentReference sourceReference;
 
-    void initialize(PlantUMLMacroParameters parameters, String content, MacroTransformationContext context)
+    private PlantUMLMacro macro;
+
+    void initialize(PlantUMLMacro macro, PlantUMLMacroParameters parameters, String content,
+        MacroTransformationContext context)
     {
+        this.macro = macro;
         this.parameters = parameters;
         this.content = content;
-        this.context = context;
-
         this.targetSyntax = context.getTransformationContext().getTargetSyntax();
 
         String source = getCurrentSource(context);
@@ -118,7 +102,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
             this.asyncContext.useEntity(this.sourceReference);
         }
         try {
-            resultBlocks = executeMacro(this.content, this.parameters);
+            resultBlocks = this.macro.executeSync(this.content, this.parameters);
         } catch (MacroExecutionException e) {
             // Display the error in the result
             resultBlocks = this.errorBlockGenerator.generateErrorBlocks("Failed to execute the PlantUML macro", e,
@@ -211,24 +195,4 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         return new MacroMarkerBlock(macroBlockToWrap.getId(), macroBlockToWrap.getParameters(),
             macroBlockToWrap.getContent(), newBlocks, macroBlockToWrap.isInline());
     }
-
-    private List<Block> executeMacro(String content, PlantUMLMacroParameters parameters) throws MacroExecutionException
-    {
-        // Save the generated image in a temporary directory and return a link block that uses the "tmp" action to
-        // point to it.
-        ImageId imageId = new ImageId(content, parameters);
-        try {
-            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(imageId),
-                parameters.getServer());
-        } catch (IOException e) {
-            throw new MacroExecutionException("Failed to generate an image using PlantUML", e);
-        }
-
-        // Return the image block pointing to the generated image.
-        ResourceReference resourceReference = new ResourceReference(this.imageWriter.getURL(imageId), ResourceType.URL);
-        ImageBlock imageBlock = new ImageBlock(resourceReference, false);
-        return Arrays.asList(imageBlock);
-    }
-
-
 }
