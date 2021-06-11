@@ -22,6 +22,7 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,7 +33,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
-import org.xwiki.contrib.plantuml.internal.store.ImageId;
 import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
 import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
@@ -130,16 +130,17 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     {
         // Save the generated image in a temporary directory and return a link block that uses the "tmp" action to
         // point to it.
-        ImageId imageId = new ImageId(content, parameters);
+        String uniqueImageId = UUID.randomUUID().toString();
         try {
-            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(imageId),
+            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(uniqueImageId),
                 computeServer(parameters));
         } catch (IOException e) {
             throw new MacroExecutionException("Failed to generate an image using PlantUML", e);
         }
 
         // Return the image block pointing to the generated image.
-        ResourceReference resourceReference = new ResourceReference(this.imageWriter.getURL(imageId), ResourceType.URL);
+        ResourceReference resourceReference =
+            new ResourceReference(this.imageWriter.getURL(uniqueImageId), ResourceType.URL);
         ImageBlock imageBlock = new ImageBlock(resourceReference, false);
         return Arrays.asList(imageBlock);
     }

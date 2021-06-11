@@ -90,7 +90,7 @@ public class TemporaryImageWriter implements ImageWriter
     private DocumentAccessBridge documentAccessBridge;
 
     @Override
-    public OutputStream getOutputStream(ImageId imageId) throws MacroExecutionException
+    public OutputStream getOutputStream(String imageId) throws MacroExecutionException
     {
         OutputStream result;
         File imageFile = getStorageLocation(imageId);
@@ -109,7 +109,7 @@ public class TemporaryImageWriter implements ImageWriter
      * @return the location where to store the generated image
      * @throws MacroExecutionException if an error happened when computing the location
      */
-    protected File getStorageLocation(ImageId imageId) throws MacroExecutionException
+    protected File getStorageLocation(String imageId) throws MacroExecutionException
     {
         File directory;
         try {
@@ -124,7 +124,7 @@ public class TemporaryImageWriter implements ImageWriter
             // Should not happen since UTF8 encoding should always be present
             throw new MacroExecutionException("Failed to compute PlantUML image location", e);
         }
-        File locationFile = new File(directory, String.format("%s.png", imageId.getId()));
+        File locationFile = new File(directory, String.format("%s.png", imageId));
         return locationFile;
     }
 
@@ -143,10 +143,10 @@ public class TemporaryImageWriter implements ImageWriter
     }
 
     @Override
-    public String getURL(ImageId imageId) throws MacroExecutionException
+    public String getURL(String imageId) throws MacroExecutionException
     {
         DocumentReference reference = new DocumentReference(getCurrentWiki(), SPACE, PAGE);
         String prefix = this.documentAccessBridge.getDocumentURL(reference, "temp", null, null);
-        return String.format("%s/%s/%s.png", prefix, MODULE_NAME, imageId.getId());
+        return String.format("%s/%s/%s.png", prefix, MODULE_NAME, imageId);
     }
 }
