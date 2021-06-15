@@ -22,7 +22,6 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -128,11 +127,9 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
 
     List<Block> executeSync(String content, PlantUMLMacroParameters parameters) throws MacroExecutionException
     {
-        // Save the generated image in a temporary directory and return a link block that uses the "tmp" action to
-        // point to it.
-        String uniqueImageId = UUID.randomUUID().toString();
+        String imageId = getImageId(content);
         try {
-            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(uniqueImageId),
+            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(imageId),
                 computeServer(parameters));
         } catch (IOException e) {
             throw new MacroExecutionException("Failed to generate an image using PlantUML", e);
@@ -140,7 +137,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
 
         // Return the image block pointing to the generated image.
         ResourceReference resourceReference =
-            new ResourceReference(this.imageWriter.getURL(uniqueImageId), ResourceType.URL);
+            new ResourceReference(this.imageWriter.getURL(imageId), ResourceType.URL);
         ImageBlock imageBlock = new ImageBlock(resourceReference, false);
         return Arrays.asList(imageBlock);
     }
@@ -152,5 +149,10 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
             serverURL = this.configuration.getPlantUMLServerURL();
         }
         return serverURL;
+    }
+
+    private String getImageId(String content)
+    {
+        return String.valueOf(content.hashCode());
     }
 }

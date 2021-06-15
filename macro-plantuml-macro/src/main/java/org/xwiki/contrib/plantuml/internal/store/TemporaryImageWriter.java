@@ -105,7 +105,7 @@ public class TemporaryImageWriter implements ImageWriter
     /**
      * Compute the location where to store the generated image.
      *
-     * @param imageId the image id that we use to generate a unique storage location
+     * @param imageId the image id that we use to generate a storage location
      * @return the location where to store the generated image
      * @throws MacroExecutionException if an error happened when computing the location
      */
