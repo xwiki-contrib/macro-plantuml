@@ -23,6 +23,7 @@ import java.io.OutputStream;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.rendering.macro.MacroExecutionException;
+import org.xwiki.url.ExtendedURL;
 
 /**
  * Writes an Image represented as an array of Bytes to storage. Also provides a helper method to get an XWiki URL to
@@ -49,5 +50,5 @@ public interface ImageWriter
      * @throws MacroExecutionException if an error happened when computing the URL (eg if the current wiki cannot be
      *         computed)
      */
-    String getURL(String imageId) throws MacroExecutionException;
+    ExtendedURL getURL(String imageId) throws MacroExecutionException;
 }

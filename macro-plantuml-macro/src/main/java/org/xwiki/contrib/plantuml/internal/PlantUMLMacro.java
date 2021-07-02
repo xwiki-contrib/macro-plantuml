@@ -20,7 +20,9 @@
 package org.xwiki.contrib.plantuml.internal;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -28,6 +30,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.tika.io.IOUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
@@ -113,13 +116,15 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         renderer.initialize(this, parameters, content, context);
 
         AsyncRendererConfiguration rendererConfiguration = new AsyncRendererConfiguration();
+        rendererConfiguration.setContextEntries(Collections.singleton("doc.reference"));
 
         // Execute the renderer
         Block result;
         try {
             result = this.executor.execute(renderer, rendererConfiguration);
         } catch (Exception e) {
-            throw new MacroExecutionException("Failed to execute the PlantUML macro", e);
+            throw new MacroExecutionException(String.format("Failed to execute the PlantUML macro for content [%s]",
+                content), e);
         }
 
         return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
@@ -128,16 +133,21 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     List<Block> executeSync(String content, PlantUMLMacroParameters parameters) throws MacroExecutionException
     {
         String imageId = getImageId(content);
+        OutputStream os = null;
         try {
-            this.plantUMLGenerator.outputImage(content, this.imageWriter.getOutputStream(imageId),
-                computeServer(parameters));
+            os = this.imageWriter.getOutputStream(imageId);
+            this.plantUMLGenerator.outputImage(content, os, computeServer(parameters));
         } catch (IOException e) {
-            throw new MacroExecutionException("Failed to generate an image using PlantUML", e);
+            throw new MacroExecutionException(
+                String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
+        } finally {
+            // Don't forget to close the output stream or the OS might run out of file handles...
+            IOUtils.closeQuietly(os);
         }
 
         // Return the image block pointing to the generated image.
         ResourceReference resourceReference =
-            new ResourceReference(this.imageWriter.getURL(imageId), ResourceType.URL);
+            new ResourceReference(this.imageWriter.getURL(imageId).serialize(), ResourceType.URL);
         ImageBlock imageBlock = new ImageBlock(resourceReference, false);
         return Arrays.asList(imageBlock);
     }

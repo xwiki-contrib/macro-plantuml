@@ -22,17 +22,23 @@ package org.xwiki.contrib.plantuml;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import javax.inject.Named;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.environment.Environment;
+import org.xwiki.environment.internal.ServletEnvironment;
 import org.xwiki.environment.internal.StandardEnvironment;
 import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
+import org.xwiki.resource.temporary.TemporaryResourceReference;
+import org.xwiki.resource.temporary.TemporaryResourceStore;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.test.XWikiTempDirUtil;
 import org.xwiki.test.annotation.AllComponents;
@@ -41,6 +47,7 @@ import org.xwiki.wiki.descriptor.WikiDescriptorManager;
 
 import net.sourceforge.plantuml.picoweb.PicoWebServer;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -96,15 +103,15 @@ public class IntegrationTests
         componentManager.registerMockComponent(AuthorizationManager.class);
         componentManager.registerMockComponent(WikiDescriptorManager.class);
 
-        ModelContext modelContext = componentManager.registerMockComponent(ModelContext.class);
-        when(modelContext.getCurrentEntityReference()).thenReturn(new WikiReference("mainwiki"));
-
         DocumentAccessBridge dab = componentManager.registerMockComponent(DocumentAccessBridge.class);
-        DocumentReference documentReference = new DocumentReference("mainwiki", "space", "page");
-        when(dab.getDocumentURL(documentReference, "temp", null, null)).thenReturn("http://temporaryURL");
+        DocumentReference documentReference = new DocumentReference("wiki", "space", "page");
+        when(dab.getCurrentDocumentReference()).thenReturn(documentReference);
 
         StandardEnvironment environment = componentManager.getInstance(Environment.class);
         environment.setTemporaryDirectory(XWikiTempDirUtil.createTemporaryDirectory());
+
+        ConfigurationSource cs = componentManager.registerMockComponent(ConfigurationSource.class, "xwikicfg");
+        when(cs.getProperty("xwiki.webapppath")).thenReturn("wikicontext");
 
         componentManager.unregisterComponent(EventListener.class, "refactoring.automaticRedirectCreator");
         componentManager.unregisterComponent(EventListener.class, "refactoring.relativeLinksUpdater");

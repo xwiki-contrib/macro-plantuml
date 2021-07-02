@@ -36,7 +36,7 @@
     <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
     <!-- The extension's category -->
     <xwiki.extension.category>macro</xwiki.extension.category>
-    <xwiki.jacoco.instructionRatio>0.73</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.66</xwiki.jacoco.instructionRatio>
     <!-- Allow upgrading from v1.x -->
     <xwiki.extension.features>org.xwiki.contrib.plantuml:macro-plantuml-macro</xwiki.extension.features>
   </properties>
@@ -74,6 +74,11 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-configuration-default</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-resource-temporary</artifactId>
       <version>${platform.version}</version>
     </dependency>
     <!-- Test Dependencies -->

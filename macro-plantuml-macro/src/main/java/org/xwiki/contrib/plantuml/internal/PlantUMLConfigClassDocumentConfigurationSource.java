@@ -19,11 +19,14 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.internal.AbstractDocumentConfigurationSource;
+import org.xwiki.model.EntityType;
+import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
 
@@ -50,10 +53,15 @@ public class PlantUMLConfigClassDocumentConfigurationSource extends AbstractDocu
     private static final LocalDocumentReference DOC_REFERENCE =
         new LocalDocumentReference(SPACE, "PlantUMLConfig");
 
+    @Inject
+    private ModelContext modelContext;
+
     @Override
     protected String getCacheId()
     {
-        return "configuration.document.plantuml";
+        // Make the cache id depend on the current wiki so that we can install this extension on several wikis
+        return String.format("configuration.document.plantuml.%s",
+            this.modelContext.getCurrentEntityReference().extractReference(EntityType.WIKI));
     }
 
     @Override
