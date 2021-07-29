@@ -76,6 +76,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
 
     private PlantUMLMacro macro;
 
+    private boolean isInline;
+
     void initialize(PlantUMLMacro macro, PlantUMLMacroParameters parameters, String content,
         MacroTransformationContext context)
     {
@@ -83,6 +85,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         this.parameters = parameters;
         this.content = content;
         this.targetSyntax = context.getTransformationContext().getTargetSyntax();
+        this.isInline = context.isInline();
 
         String source = getCurrentSource(context);
         if (source != null) {
@@ -102,7 +105,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
             this.asyncContext.useEntity(this.sourceReference);
         }
         try {
-            resultBlocks = this.macro.executeSync(this.content, this.parameters);
+            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.isInline);
         } catch (MacroExecutionException e) {
             // Display the error in the result
             resultBlocks = this.errorBlockGenerator.generateErrorBlocks("Failed to execute the PlantUML macro", e,
@@ -115,7 +118,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
     @Override
     public boolean isInline()
     {
-        return false;
+        return this.isInline;
     }
 
     @Override

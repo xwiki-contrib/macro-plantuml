@@ -1,24 +1,28 @@
 .runTransformations
 .#-----------------------------------------------------
 .input|xwiki/2.0
-.# Test the PlantUML macro called without parameters
+.# Test inline
 .#-----------------------------------------------------
-{{plantuml}}
+Hello {{plantuml}}
 @startuml
 Bob -> Alice : hello
 @enduml
-{{/plantuml}}
+{{/plantuml}} world
 .#-----------------------------------------------------
 .expect|event/1.0
 .#-----------------------------------------------------
 beginDocument
-beginMacroMarkerStandalone [plantuml] [] [@startuml
+beginParagraph
+onWord [Hello]
+onSpace
+beginMacroMarkerInline [plantuml] [] [@startuml
 Bob -> Alice : hello
 @enduml]
-beginGroup
 onImage [Typed = [true] Type = [url] Reference = [/wikicontext/tmp/plantuml/document%3Awiki%3Aspace.page/${{{regex:.*}}}.png]] [false]
-endGroup
-endMacroMarkerStandalone [plantuml] [] [@startuml
+endMacroMarkerInline [plantuml] [] [@startuml
 Bob -> Alice : hello
 @enduml]
+onSpace
+onWord [world]
+endParagraph
 endDocument

@@ -40,6 +40,7 @@ import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.CompositeBlock;
+import org.xwiki.rendering.block.GroupBlock;
 import org.xwiki.rendering.block.ImageBlock;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
@@ -99,7 +100,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     @Override
     public boolean supportsInlineMode()
     {
-        return false;
+        return true;
     }
 
     @Override
@@ -130,7 +131,8 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
     }
 
-    List<Block> executeSync(String content, PlantUMLMacroParameters parameters) throws MacroExecutionException
+    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline)
+        throws MacroExecutionException
     {
         String imageId = getImageId(content);
         OutputStream os = null;
@@ -148,8 +150,13 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         // Return the image block pointing to the generated image.
         ResourceReference resourceReference =
             new ResourceReference(this.imageWriter.getURL(imageId).serialize(), ResourceType.URL);
-        ImageBlock imageBlock = new ImageBlock(resourceReference, false);
-        return Arrays.asList(imageBlock);
+        Block resultBlock = new ImageBlock(resourceReference, false);
+
+        // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
+        if (!isInline) {
+            resultBlock = new GroupBlock(Arrays.asList(resultBlock));
+        }
+        return Arrays.asList(resultBlock);
     }
 
     private String computeServer(PlantUMLMacroParameters parameters)

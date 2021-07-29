@@ -15,7 +15,9 @@ beginDocument
 beginMacroMarkerStandalone [plantuml] [server=http://localhost:8777] [@startuml
 Bob -> Alice : hello
 @enduml]
+beginGroup
 onImage [Typed = [true] Type = [url] Reference = [/wikicontext/tmp/plantuml/document%3Awiki%3Aspace.page/${{{regex:.*}}}.png]] [false]
+endGroup
 endMacroMarkerStandalone [plantuml] [server=http://localhost:8777] [@startuml
 Bob -> Alice : hello
 @enduml]
