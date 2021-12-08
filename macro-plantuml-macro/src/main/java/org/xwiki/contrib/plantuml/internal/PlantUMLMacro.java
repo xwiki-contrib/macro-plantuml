@@ -30,7 +30,6 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.tika.io.IOUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
@@ -135,16 +134,11 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         throws MacroExecutionException
     {
         String imageId = getImageId(content);
-        OutputStream os = null;
-        try {
-            os = this.imageWriter.getOutputStream(imageId);
+        try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
             this.plantUMLGenerator.outputImage(content, os, computeServer(parameters));
         } catch (IOException e) {
             throw new MacroExecutionException(
                 String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
-        } finally {
-            // Don't forget to close the output stream or the OS might run out of file handles...
-            IOUtils.closeQuietly(os);
         }
 
         // Return the image block pointing to the generated image.
