@@ -44,5 +44,5 @@ public interface PlantUMLGenerator
      *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
      * @throws IOException when there's a generation or writing error
      */
-    void outputImage(String input, OutputStream output, String serverURL) throws IOException;
+    void outputImage(String input, OutputStream output, String serverURL, String format) throws IOException;
 }

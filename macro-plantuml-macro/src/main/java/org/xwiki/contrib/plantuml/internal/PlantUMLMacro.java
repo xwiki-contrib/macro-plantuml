@@ -135,7 +135,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     {
         String imageId = getImageId(content);
         try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
-            this.plantUMLGenerator.outputImage(content, os, computeServer(parameters));
+            this.plantUMLGenerator.outputImage(content, os, computeServer(parameters), computeFormat(parameters));
         } catch (IOException e) {
             throw new MacroExecutionException(
                 String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
@@ -160,6 +160,15 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
             serverURL = this.configuration.getPlantUMLServerURL();
         }
         return serverURL;
+    }
+
+    private String computeFormat(PlantUMLMacroParameters parameters)
+    {
+        String format = parameters.getFormat();
+        if (format == null) {
+            format = this.configuration.getOutputFormat();
+        }
+        return format;
     }
 
     private String getImageId(String content)

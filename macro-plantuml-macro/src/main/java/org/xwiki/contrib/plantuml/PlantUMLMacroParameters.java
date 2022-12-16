@@ -33,6 +33,8 @@ public class PlantUMLMacroParameters
 {
     private String serverURL;
 
+    private String format;
+
     /**
      * @param serverURL see {@link #getServer()}
      */
@@ -43,11 +45,28 @@ public class PlantUMLMacroParameters
     }
 
     /**
+     * @param format see {@link #getFormat()}
+     */
+    @PropertyDescription("the PlantUML output format")
+    public void setFormat(String format)
+    {
+        this.format = format;
+    }
+
+    /**
      * @return the (optional) PlantUML server URL (e.g. {@code http://www.plantuml.com/plantuml})
      */
     public String getServer()
     {
         return this.serverURL;
+    }
+
+    /**
+     * @return the (optional) PlantUML output format, png by default
+     */
+    public String getFormat()
+    {
+        return this.format;
     }
 
     @Override
@@ -65,6 +84,7 @@ public class PlantUMLMacroParameters
         PlantUMLMacroParameters rhs = (PlantUMLMacroParameters) object;
         return new EqualsBuilder()
             .append(getServer(), rhs.getServer())
+            .append(getFormat(), rhs.getFormat())
             .isEquals();
     }
 
@@ -73,6 +93,7 @@ public class PlantUMLMacroParameters
     {
         return new HashCodeBuilder(5, 37)
             .append(getServer())
+            .append(getFormat())
             .toHashCode();
     }
 }
