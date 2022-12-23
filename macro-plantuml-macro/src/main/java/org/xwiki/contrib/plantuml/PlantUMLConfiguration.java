@@ -35,5 +35,10 @@ public interface PlantUMLConfiguration
      */
     String getPlantUMLServerURL();
 
-    String getOutputFormat();
+    /**
+     * @return the default diagram output format (png)
+     * @Unstable
+     * @since 14.10
+     */
+    String getDefaultOutputFormat();
 }

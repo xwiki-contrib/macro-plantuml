@@ -45,7 +45,8 @@ public class PlantUMLMacroParameters
     }
 
     /**
-     * @param format see {@link #getFormat()}
+     * @param format see {@link #getFormat()}. Valid values: svg, png, txt
+     *
      */
     @PropertyDescription("the PlantUML output format")
     public void setFormat(String format)
@@ -62,7 +63,7 @@ public class PlantUMLMacroParameters
     }
 
     /**
-     * @return the (optional) PlantUML output format, png by default
+     * @return the (optional) PlantUML output format, png by default. Valid values: svg, png, txt
      */
     public String getFormat()
     {

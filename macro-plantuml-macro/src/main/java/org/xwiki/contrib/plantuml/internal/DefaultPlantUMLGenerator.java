@@ -56,6 +56,12 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
     private AsciiEncoder asciiEncoder = new AsciiEncoder();
 
     @Override
+    public void outputImage(String input, OutputStream outputStream, String serverURL) throws IOException
+    {
+        outputImage(input, outputStream, serverURL, "png");
+    }
+
+    @Override
     public void outputImage(String input, OutputStream outputStream, String serverURL, String format) throws IOException
     {
         if (StringUtils.isEmpty(serverURL)) {
