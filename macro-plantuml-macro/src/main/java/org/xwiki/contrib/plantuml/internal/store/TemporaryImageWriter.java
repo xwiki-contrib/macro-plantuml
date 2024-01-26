@@ -67,7 +67,8 @@ public class TemporaryImageWriter implements ImageWriter
     // TODO: Once this extension starts depending on XWiki 14.7+, change this to:
     //   @Inject
     //   private ResourceReferenceSerializer<ResourceReference, ExtendedURL> resourceReferenceSerializer;
-    // As it is right now, this is hardcoding the URL scheme and would prevent any other Temporary URL scheme to be used.
+    // As it is right now, this is hardcoding the URL scheme and would prevent any other Temporary URL scheme to be
+    // used.
     @Inject
     @Named("standard/tmp")
     private ResourceReferenceSerializer<TemporaryResourceReference, ExtendedURL> temporaryResourceSerializer;

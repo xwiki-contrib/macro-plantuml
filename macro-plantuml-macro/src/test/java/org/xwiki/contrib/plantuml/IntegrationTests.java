@@ -22,23 +22,16 @@ package org.xwiki.contrib.plantuml;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import javax.inject.Named;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.environment.Environment;
-import org.xwiki.environment.internal.ServletEnvironment;
 import org.xwiki.environment.internal.StandardEnvironment;
-import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
-import org.xwiki.resource.temporary.TemporaryResourceReference;
-import org.xwiki.resource.temporary.TemporaryResourceStore;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.test.XWikiTempDirUtil;
 import org.xwiki.test.annotation.AllComponents;
@@ -47,7 +40,6 @@ import org.xwiki.wiki.descriptor.WikiDescriptorManager;
 
 import net.sourceforge.plantuml.picoweb.PicoWebServer;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
