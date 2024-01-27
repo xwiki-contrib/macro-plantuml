@@ -34,4 +34,11 @@ public interface PlantUMLConfiguration
      * @return the (optional) PlantUML server URL (e.g. {@code http://www.plantuml.com/plantuml}) or null if not defined
      */
     String getPlantUMLServerURL();
+
+    /**
+     * @return the default diagram output format (png)
+     * @Unstable
+     * @since 14.10
+     */
+    String getDefaultOutputFormat();
 }
