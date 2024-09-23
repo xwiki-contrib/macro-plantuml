@@ -32,3 +32,5 @@ nbproject
 .sonar-ide.properties
 .clover
 *~
+
+.vscode
