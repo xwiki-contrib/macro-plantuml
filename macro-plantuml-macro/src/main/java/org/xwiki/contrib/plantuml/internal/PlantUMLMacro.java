@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -93,7 +95,9 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     {
         super("PlantUML", DESCRIPTION, new DefaultContentDescriptor(CONTENT_DESCRIPTION),
             PlantUMLMacroParameters.class);
-        setDefaultCategory(DEFAULT_CATEGORY_CONTENT);
+        Set<String> defaultCategories = new HashSet<>();
+        defaultCategories.add(DEFAULT_CATEGORY_CONTENT);
+        super.setDefaultCategories(defaultCategories);
     }
 
     @Override

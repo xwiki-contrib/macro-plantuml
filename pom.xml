@@ -21,18 +21,32 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  
+  <repositories>
+    <repository>
+      <id>xwiki-releases</id>
+      <name>XWiki Releases</name>
+      <url>https://maven.xwiki.org/releases/</url>
+    </repository>
+    <repository>
+      <id>css4j</id>
+      <name>CSS4J</name>
+      <url>https://css4j.github.io/maven</url>
+    </repository>
+  </repositories>
+
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.xwiki.contrib</groupId>
     <artifactId>parent-platform</artifactId>
-    <version>12.10-1</version>
+    <version>16.4.2</version>
   </parent>
   <groupId>org.xwiki.contrib.plantuml</groupId>
   <artifactId>macro-plantuml</artifactId>
   <version>2.1.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>PlantUML Macro - Parent POM</name>
-  <description>Parent POM for Jthe PlantUML modules</description>
+  <description>Parent POM for the PlantUML modules</description>
   <url>http://extensions.xwiki.org/xwiki/bin/view/Extension/JIRA%20Macro</url>
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/macro-plantuml.git</connection>
@@ -52,6 +66,12 @@
       <id>vmassol</id>
       <name>Vincent Massol</name>
     </developer>
+    <developer>
+      <id>dunklecat</id>
+      <roles>
+        <role>occasional mantainer</role>
+      </roles>
+    </developer>
   </developers>
   <properties>
     <xwiki.issueManagement.jira.id>PLANTUML</xwiki.issueManagement.jira.id>
@@ -62,20 +82,4 @@
     <module>macro-plantuml-macro</module>
     <module>macro-plantuml-ui</module>
   </modules>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <!-- TODO: Remove once the parent pom depends on XWiki Commons 13.2RC1+.
-             See http://jira.xwiki.org/browse/XCOMMONS-2150 -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <!-- Specify the version of the code so that it doesn't depend on the Java version used to build XWiki -->
-            <source>8</source>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>
