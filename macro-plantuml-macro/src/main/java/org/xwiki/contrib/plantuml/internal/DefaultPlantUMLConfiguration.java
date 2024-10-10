@@ -56,4 +56,16 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
         }
         return serverURL;
     }
+
+    @Override
+    public String getDefaultOutputFormat() {
+        String format = this.plantUMLConfigurationSource.getProperty("format");
+        // The returned value can be null if no xobject has been defined on the wiki config page.
+        if (format == null) {
+            // Fallback to xwiki.properties
+            format = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format", "png");
+        }
+
+        return format;
+    }
 }

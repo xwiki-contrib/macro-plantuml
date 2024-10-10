@@ -58,6 +58,12 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
     @Override
     public void outputImage(String input, OutputStream outputStream, String serverURL) throws IOException
     {
+        outputImage(input, outputStream, serverURL, "png");
+    }
+
+    @Override
+    public void outputImage(String input, OutputStream outputStream, String serverURL, String format) throws IOException
+    {
         if (StringUtils.isEmpty(serverURL)) {
             new SourceStringReader(input).outputImage(outputStream);
         } else {
@@ -65,7 +71,7 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
             // https://plantuml.com/text-encoding
             String compressedInput = this.asciiEncoder.encode(
                 this.compressor.compress(input.getBytes(StandardCharsets.UTF_8)));
-            String fullURL = String.format("%s/png/~1%s", StringUtils.removeEnd(serverURL, "/"), compressedInput);
+            String fullURL = String.format("%s/%s/~1%s", StringUtils.removeEnd(serverURL, "/"), format, compressedInput);
             // Call the server and get the response
             try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
                 HttpGet httpGet = new HttpGet(fullURL);

@@ -36,13 +36,27 @@ public interface PlantUMLGenerator
     /**
      * Generate the image in the passed output parameter, using PlantUML.
      *
+     * @param input     the textual definition input
+     * @param output    the stream into which the generated image will be written to
+     * @param serverURL the optional plantUML server URL (e.g. {@code http://www.plantuml.com/plantuml}. If not an
+     *                  empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
+     *                  embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
+     *                  GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
+     * @throws IOException when there's a generation or writing error
+     */
+    void outputImage(String input, OutputStream output, String serverURL) throws IOException;
+
+    /**
+     * Generate the image in the passed output parameter, using PlantUML.
+     *
      * @param input the textual definition input
      * @param output the stream into which the generated image will be written to
      * @param serverURL the optional plantUML server URL (e.g. {@code http://www.plantuml.com/plantuml}. If not an
      *        empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
      *        embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
      *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
+     * @param format sets the output format from the PlantUML server
      * @throws IOException when there's a generation or writing error
      */
-    void outputImage(String input, OutputStream output, String serverURL) throws IOException;
+    void outputImage(String input, OutputStream output, String serverURL, String format) throws IOException;
 }
