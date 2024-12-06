@@ -33,6 +33,8 @@ public class PlantUMLMacroParameters
 {
     private String serverURL;
 
+    private PlantUMLDiagramType type;
+
     /**
      * @param serverURL see {@link #getServer()}
      */
@@ -48,6 +50,23 @@ public class PlantUMLMacroParameters
     public String getServer()
     {
         return this.serverURL;
+    }
+
+    /**
+     * @param type see {@link #getType()}
+     */
+    @PropertyDescription("the type of diagram")
+    public void setType(PlantUMLDiagramType type)
+    {
+        this.type = type;
+    }
+
+    /**
+     * @return the type of diagram
+     */
+    public PlantUMLDiagramType getType()
+    {
+        return (this.type != null) ? this.type : PlantUMLDiagramType.plantuml;
     }
 
     @Override

@@ -30,8 +30,11 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
+import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
 import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
@@ -70,6 +73,12 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
      */
     private static final String CONTENT_DESCRIPTION = "The textual definition of the diagram";
 
+    private static final String AT_START = "@start";
+
+    private static final String AT_END = "@end";
+
+    private static final String NEW_LINE = "\n";
+
     @Inject
     private BlockAsyncRendererExecutor executor;
 
@@ -85,6 +94,9 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
 
     @Inject
     private PlantUMLConfiguration configuration;
+
+    @Inject
+    private Logger logger;
 
     /**
      * Create and initialize the descriptor of the macro.
@@ -133,12 +145,16 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline)
         throws MacroExecutionException
     {
-        String imageId = getImageId(content);
+        String wrappedContent = maybeAddContentMarkers(content, parameters);
+
+        logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
+
+        String imageId = getImageId(wrappedContent);
         try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
-            this.plantUMLGenerator.outputImage(content, os, computeServer(parameters));
+            this.plantUMLGenerator.outputImage(wrappedContent, os, computeServer(parameters));
         } catch (IOException e) {
             throw new MacroExecutionException(
-                String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
+                String.format("Failed to generate an image using PlantUML for content [%s]", wrappedContent), e);
         }
 
         // Return the image block pointing to the generated image.
@@ -165,5 +181,36 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     private String getImageId(String content)
     {
         return String.valueOf(content.hashCode());
+    }
+
+    private String maybeAddContentMarkers(String content, PlantUMLMacroParameters parameters)
+    {
+        String trimmedContent = content.trim();
+
+        if (!trimmedContent.startsWith(AT_START)) {
+            // We'll assume that if a diagram doesn't start with an @start tag, then it's likely to not end with an
+            // @end.... tag
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(computeContentMarker(AT_START, parameters));
+            sb.append(trimmedContent);
+            sb.append(NEW_LINE);
+            sb.append(computeContentMarker(AT_END, parameters));
+
+            return sb.toString();
+        }
+
+        return trimmedContent;
+    }
+
+    private String computeContentMarker(String prefix, PlantUMLMacroParameters parameters)
+    {
+        String newLine = (!prefix.equals(AT_END)) ? NEW_LINE : StringUtils.EMPTY;
+
+        if (PlantUMLDiagramType.plantuml.equals(parameters.getType())) {
+            return prefix + "uml" + newLine;
+        } else {
+            return prefix + parameters.getType().toString().toLowerCase() + newLine;
+        }
     }
 }
