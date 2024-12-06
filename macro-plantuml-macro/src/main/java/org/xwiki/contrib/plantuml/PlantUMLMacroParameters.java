@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.plantuml;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.properties.annotation.PropertyDescription;
@@ -32,6 +33,8 @@ import org.xwiki.properties.annotation.PropertyDescription;
 public class PlantUMLMacroParameters
 {
     private String serverURL;
+
+    private String title;
 
     private PlantUMLDiagramType type;
 
@@ -67,6 +70,23 @@ public class PlantUMLMacroParameters
     public PlantUMLDiagramType getType()
     {
         return (this.type != null) ? this.type : PlantUMLDiagramType.plantuml;
+    }
+
+    /**
+     * @param title see {@link #getTitle()}
+     */
+    @PropertyDescription("the diagram title")
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    /**
+     * @return the diagram title
+     */
+    public String getTitle()
+    {
+        return (this.title != null) ? this.title : StringUtils.EMPTY;
     }
 
     @Override

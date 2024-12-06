@@ -21,6 +21,7 @@ package org.xwiki.contrib.plantuml.internal;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -145,8 +146,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline)
         throws MacroExecutionException
     {
-        String wrappedContent = maybeAddContentMarkers(content, parameters);
-
+        String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
 
         String imageId = getImageId(wrappedContent);
@@ -212,5 +212,18 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         } else {
             return prefix + parameters.getType().toString().toLowerCase() + newLine;
         }
+    }
+
+    private String maybeAddTitle(String content, PlantUMLMacroParameters parameters)
+    {
+        if (StringUtils.isNotBlank(parameters.getTitle()) && !content.contains("\ntitle ")) {
+            // Insert the title just under the @start tag, which is always the first line
+            List<String> splittedContent = new ArrayList<>(Arrays.asList(content.split(NEW_LINE)));
+            splittedContent.add(1, String.format("title %s", parameters.getTitle()));
+
+            return String.join(NEW_LINE, splittedContent);
+        }
+
+        return content;
     }
 }
