@@ -50,5 +50,53 @@ public enum PlantUMLDiagramType
     /**
      * A Salt diagram.
      */
-    salt
+    salt,
+
+    /**
+     * A mindmap diagram.
+     * @since 2.3.1
+     */
+    mindmap,
+
+    /**
+     * A regex diagram.
+     * @since 2.3.1
+     */
+    regex,
+
+    /**
+     * A gantt diagram.
+     * @since 2.3.1
+     */
+    gantt,
+
+    /**
+     * A chronology diagram.
+     * @since 2.3.1
+     */
+    chronology,
+
+    /**
+     * A work breakdown structure diagram.
+     * @since 2.3.1
+     */
+    wbs,
+
+    /**
+     * An extended backus-naur form.
+     * @since 2.3.1
+     */
+    ebnf,
+
+    /**
+     * A JSON diagram.
+     * @since 2.3.1
+     */
+    json,
+
+    /**
+     * A YAML diagram.
+     * @since 2.3.1
+     */
+    yaml
 }
