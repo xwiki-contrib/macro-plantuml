@@ -37,7 +37,7 @@
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/macro-plantuml.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/macro-plantuml.git</developerConnection>
-    <url>https://github.com/xwiki-contrib/macro-plantuml</url>
+    <url>https://github.com/xwiki-contrib/macro-plantuml/tree/master</url>
     <tag>HEAD</tag>
   </scm>
   <developers>
