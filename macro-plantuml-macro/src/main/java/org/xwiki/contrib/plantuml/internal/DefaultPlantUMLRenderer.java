@@ -74,6 +74,7 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
         renderers = new HashMap<>();
         renderers.put(PlantUMLDiagramFormat.png, this::renderImageBlock);
         renderers.put(PlantUMLDiagramFormat.svg, this::renderRawBlock);
+        renderers.put(PlantUMLDiagramFormat.txt, this::renderPreBlock);
     }
 
     /**
@@ -95,6 +96,13 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
     {
         String text = renderToString(content, serverURL, diagramFormat);
         return new RawBlock(text, Syntax.XHTML_1_0);
+    }
+
+    private Block renderPreBlock(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
+            throws MacroExecutionException
+    {
+        String text = renderToString(content, serverURL, diagramFormat);
+        return new RawBlock(String.format("<pre>\n%s\n</pre>", text), Syntax.XHTML_1_0);
     }
 
     private String renderToString(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)

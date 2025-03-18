@@ -37,7 +37,7 @@ public interface PlantUMLConfiguration
     String getPlantUMLServerURL();
 
     /**
-     * @return the (optional) PlantUML output format (e.g. {@code svg}, {@code png})
+     * @return the (optional) PlantUML output format (e.g. {@code svg}, {@code png}, {@code txt})
      * or null if not defined
      * @since 2.4
      */

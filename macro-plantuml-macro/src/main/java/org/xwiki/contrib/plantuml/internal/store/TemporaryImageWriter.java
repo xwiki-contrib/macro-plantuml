@@ -84,7 +84,7 @@ public class TemporaryImageWriter implements ImageWriter
             result = new FileOutputStream(imageFile);
         } catch (IOException e) {
             throw new MacroExecutionException(
-                    String.format("Failed to create the PlantUML image file for image id [%s]", imageFilename), e);
+                String.format("Failed to create the PlantUML image file for image id [%s]", imageFilename), e);
         }
         return result;
     }
