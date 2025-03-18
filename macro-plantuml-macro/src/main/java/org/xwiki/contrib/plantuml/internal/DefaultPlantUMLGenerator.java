@@ -22,7 +22,6 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 import javax.inject.Singleton;
 
@@ -38,8 +37,9 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 
 import net.sourceforge.plantuml.SourceStringReader;
-import net.sourceforge.plantuml.code.AsciiEncoder;
-import net.sourceforge.plantuml.code.CompressionHuffman;
+import net.sourceforge.plantuml.FileFormat;
+import net.sourceforge.plantuml.FileFormatOption;
+import net.sourceforge.plantuml.code.TranscoderUtil;
 
 /**
  * Generate an image from a textual definition, using PlantUML.
@@ -51,27 +51,35 @@ import net.sourceforge.plantuml.code.CompressionHuffman;
 @Singleton
 public class DefaultPlantUMLGenerator implements PlantUMLGenerator
 {
-    private CompressionHuffman compressor = new CompressionHuffman();
-
-    private AsciiEncoder asciiEncoder = new AsciiEncoder();
-
     @Override
     public void outputImage(String input, OutputStream outputStream, String serverURL) throws IOException
     {
+        FileFormat fileFormat = FileFormat.PNG;
         if (StringUtils.isEmpty(serverURL)) {
-            new SourceStringReader(input).outputImage(outputStream);
+            internalGenerator(input, outputStream, fileFormat);
         } else {
-            // Call the remote server, by passing the input text compressed and encoded, see
-            // https://plantuml.com/text-encoding
-            String compressedInput = this.asciiEncoder.encode(
-                this.compressor.compress(input.getBytes(StandardCharsets.UTF_8)));
-            String fullURL = String.format("%s/png/~1%s", StringUtils.removeEnd(serverURL, "/"), compressedInput);
-            // Call the server and get the response
-            try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-                HttpGet httpGet = new HttpGet(fullURL);
-                try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-                    handleResponse(response, outputStream, fullURL);
-                }
+            externalGenerator(input, outputStream, serverURL, fileFormat.name().toLowerCase());
+        }
+    }
+
+    private void internalGenerator(String input, OutputStream outputStream, FileFormat fileFormat) throws IOException
+    {
+        new SourceStringReader(input).outputImage(outputStream, new FileFormatOption(fileFormat));
+    }
+
+    private void externalGenerator(String input, OutputStream outputStream, String serverURL, String outputFormat)
+            throws IOException
+    {
+        // Call the remote server, by passing the input text compressed and encoded, see
+        // https://plantuml.com/text-encoding
+        String baseURL = StringUtils.removeEnd(serverURL, "/");
+        String compressedInput = TranscoderUtil.getDefaultTranscoder().encode(input);
+        String fullURL = String.format("%s/%s/%s", baseURL, outputFormat, compressedInput);
+        // Call the server and get the response
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(fullURL);
+            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+                handleResponse(response, outputStream, fullURL);
             }
         }
     }
