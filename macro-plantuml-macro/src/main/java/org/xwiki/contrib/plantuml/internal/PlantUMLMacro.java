@@ -31,6 +31,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import net.sourceforge.plantuml.FileFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
@@ -149,24 +150,31 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
 
-        String imageId = getImageId(wrappedContent);
-        try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
-            this.plantUMLGenerator.outputImage(wrappedContent, os, computeServer(parameters));
-        } catch (IOException e) {
-            throw new MacroExecutionException(
-                String.format("Failed to generate an image using PlantUML for content [%s]", wrappedContent), e);
-        }
-
-        // Return the image block pointing to the generated image.
-        ResourceReference resourceReference =
-            new ResourceReference(this.imageWriter.getURL(imageId).serialize(), ResourceType.URL);
-        Block resultBlock = new ImageBlock(resourceReference, false);
+        Block resultBlock = renderImageBlock(wrappedContent, computeServer(parameters));
 
         // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
         if (!isInline) {
             resultBlock = new GroupBlock(Arrays.asList(resultBlock));
         }
         return Arrays.asList(resultBlock);
+    }
+
+    private Block renderImageBlock(String content, String serverURL)
+            throws MacroExecutionException
+    {
+        FileFormat fileFormat = FileFormat.PNG;
+        String imageFilename = getImageFilename(content, fileFormat.getFileSuffix());
+        try (OutputStream os = this.imageWriter.getOutputStream(imageFilename)) {
+            this.plantUMLGenerator.outputImage(content, os, serverURL);
+        } catch (IOException e) {
+            throw new MacroExecutionException(
+                    String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
+        }
+
+        // Return the image block pointing to the generated image.
+        ResourceReference resourceReference =
+                new ResourceReference(this.imageWriter.getURL(imageFilename).serialize(), ResourceType.URL);
+        return new ImageBlock(resourceReference, false);
     }
 
     private String computeServer(PlantUMLMacroParameters parameters)
@@ -178,9 +186,9 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return serverURL;
     }
 
-    private String getImageId(String content)
+    private String getImageFilename(String content, String extension)
     {
-        return String.valueOf(content.hashCode());
+        return String.format("%d%s", content.hashCode(), extension);
     }
 
     private String maybeAddContentMarkers(String content, PlantUMLMacroParameters parameters)
