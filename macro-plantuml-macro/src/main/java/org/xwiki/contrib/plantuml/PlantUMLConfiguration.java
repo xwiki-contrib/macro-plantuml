@@ -31,7 +31,15 @@ import org.xwiki.component.annotation.Role;
 public interface PlantUMLConfiguration
 {
     /**
-     * @return the (optional) PlantUML server URL (e.g. {@code http://www.plantuml.com/plantuml}) or null if not defined
+     * @return the (optional) PlantUML server URL (e.g. {@code https://www.plantuml.com/plantuml})
+     * or null if not defined
      */
     String getPlantUMLServerURL();
+
+    /**
+     * @return the (optional) PlantUML output format (e.g. {@code svg}, {@code png})
+     * or null if not defined
+     * @since 2.4
+     */
+    String getPlantUMLOutputFormat();
 }

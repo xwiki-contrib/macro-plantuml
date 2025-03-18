@@ -56,4 +56,10 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
         }
         return serverURL;
     }
+
+    @Override
+    public String getPlantUMLOutputFormat()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format");
+    }
 }

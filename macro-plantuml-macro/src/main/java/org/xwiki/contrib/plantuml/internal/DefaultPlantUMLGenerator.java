@@ -34,12 +34,13 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.poi.util.IOUtils;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 
 import net.sourceforge.plantuml.SourceStringReader;
+import net.sourceforge.plantuml.code.TranscoderUtil;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
-import net.sourceforge.plantuml.code.TranscoderUtil;
 
 /**
  * Generate an image from a textual definition, using PlantUML.
@@ -52,13 +53,13 @@ import net.sourceforge.plantuml.code.TranscoderUtil;
 public class DefaultPlantUMLGenerator implements PlantUMLGenerator
 {
     @Override
-    public void outputImage(String input, OutputStream outputStream, String serverURL) throws IOException
+    public void outputImage(String input, OutputStream outputStream, String serverURL, PlantUMLDiagramFormat format)
+            throws IOException
     {
-        FileFormat fileFormat = FileFormat.PNG;
         if (StringUtils.isEmpty(serverURL)) {
-            internalGenerator(input, outputStream, fileFormat);
+            internalGenerator(input, outputStream, format.getFileFormat());
         } else {
-            externalGenerator(input, outputStream, serverURL, fileFormat.name().toLowerCase());
+            externalGenerator(input, outputStream, serverURL, format.getPathParameter());
         }
     }
 
