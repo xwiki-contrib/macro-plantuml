@@ -19,8 +19,6 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,17 +35,13 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
-import org.xwiki.contrib.plantuml.PlantUMLGenerator;
+import org.xwiki.contrib.plantuml.PlantUMLRenderer;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
-import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
 import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.CompositeBlock;
 import org.xwiki.rendering.block.GroupBlock;
-import org.xwiki.rendering.block.ImageBlock;
-import org.xwiki.rendering.listener.reference.ResourceReference;
-import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
@@ -88,11 +82,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     private Provider<PlantUMLBlockAsyncRenderer> asyncRendererProvider;
 
     @Inject
-    private PlantUMLGenerator plantUMLGenerator;
-
-    @Inject
-    @Named("tmp")
-    private ImageWriter imageWriter;
+    private PlantUMLRenderer plantUMLRenderer;
 
     @Inject
     private PlantUMLConfiguration configuration;
@@ -150,30 +140,17 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
 
-        Block resultBlock = renderImageBlock(wrappedContent, computeServer(parameters), computeFormat(parameters));
+        Block resultBlock = plantUMLRenderer.renderDiagram(
+                wrappedContent,
+                computeServer(parameters),
+                computeFormat(parameters)
+        );
 
         // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
         if (!isInline) {
             resultBlock = new GroupBlock(Arrays.asList(resultBlock));
         }
         return Arrays.asList(resultBlock);
-    }
-
-    private Block renderImageBlock(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
-            throws MacroExecutionException
-    {
-        String imageFilename = getImageFilename(content, diagramFormat.getFileFormat().getFileSuffix());
-        try (OutputStream os = this.imageWriter.getOutputStream(imageFilename)) {
-            this.plantUMLGenerator.outputImage(content, os, serverURL, diagramFormat);
-        } catch (IOException e) {
-            throw new MacroExecutionException(
-                    String.format("Failed to generate an image using PlantUML for content [%s]", content), e);
-        }
-
-        // Return the image block pointing to the generated image.
-        ResourceReference resourceReference =
-                new ResourceReference(this.imageWriter.getURL(imageFilename).serialize(), ResourceType.URL);
-        return new ImageBlock(resourceReference, false);
     }
 
     private String computeServer(PlantUMLMacroParameters parameters)
@@ -192,11 +169,6 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
             format = PlantUMLDiagramFormat.fromString(this.configuration.getPlantUMLOutputFormat());
         }
         return format;
-    }
-
-    private String getImageFilename(String content, String extension)
-    {
-        return String.format("%d%s", content.hashCode(), extension);
     }
 
     private String maybeAddContentMarkers(String content, PlantUMLMacroParameters parameters)
