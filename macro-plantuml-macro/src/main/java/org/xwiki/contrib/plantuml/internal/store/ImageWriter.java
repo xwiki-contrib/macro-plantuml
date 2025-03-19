@@ -36,19 +36,19 @@ import org.xwiki.url.ExtendedURL;
 public interface ImageWriter
 {
     /**
-     * @param imageFilename the image id that we use to generate a unique storage location
+     * @param imageId the image id that we use to generate a unique storage location
      * @return the output stream into which to write to save the image data to disk
      * @throws MacroExecutionException if the target file cannot be created (already exists and is a directory, etc)
      */
-    OutputStream getOutputStream(String imageFilename) throws MacroExecutionException;
+    OutputStream getOutputStream(String imageId) throws MacroExecutionException;
 
     /**
      * Compute the URL to use to access the stored generate chart image.
      *
-     * @param imageFilename the image id for the image that we have stored
+     * @param imageId the image id for the image that we have stored
      * @return the URL to use to access the stored generate chart image
      * @throws MacroExecutionException if an error happened when computing the URL (eg if the current wiki cannot be
      *         computed)
      */
-    ExtendedURL getURL(String imageFilename) throws MacroExecutionException;
+    ExtendedURL getURL(String imageId) throws MacroExecutionException;
 }

@@ -120,8 +120,8 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
     private Block renderImageBlock(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
             throws MacroExecutionException
     {
-        String imageFilename = getImageFilename(content, diagramFormat.getFileFormat().getFileSuffix());
-        try (OutputStream os = this.imageWriter.getOutputStream(imageFilename)) {
+        String imageId = getImageId(content, diagramFormat.getFileFormat().getFileSuffix());
+        try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
             this.plantUMLGenerator.outputImage(content, os, serverURL, diagramFormat);
         } catch (IOException e) {
             throw new MacroExecutionException(
@@ -130,11 +130,11 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
 
         // Return the image block pointing to the generated image.
         ResourceReference resourceReference =
-                new ResourceReference(this.imageWriter.getURL(imageFilename).serialize(), ResourceType.URL);
+                new ResourceReference(this.imageWriter.getURL(imageId).serialize(), ResourceType.URL);
         return new ImageBlock(resourceReference, false);
     }
 
-    private String getImageFilename(String content, String extension)
+    private String getImageId(String content, String extension)
     {
         return String.format("%d%s", content.hashCode(), extension);
     }

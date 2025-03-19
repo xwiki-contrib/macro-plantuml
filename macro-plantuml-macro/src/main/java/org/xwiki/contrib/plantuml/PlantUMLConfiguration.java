@@ -41,5 +41,9 @@ public interface PlantUMLConfiguration
      * or null if not defined
      * @since 2.4
      */
-    String getPlantUMLOutputFormat();
+    default String getPlantUMLOutputFormat()
+    {
+        // fallback for backward compatibility
+        return null;
+    }
 }
