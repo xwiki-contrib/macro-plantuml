@@ -102,7 +102,18 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
             throws MacroExecutionException
     {
         String text = renderToString(content, serverURL, diagramFormat);
-        return new RawBlock(String.format("<pre>\n%s\n</pre>", text), Syntax.XHTML_1_0);
+        return new RawBlock(String.format("<pre>\n%s\n</pre>", escapeHtml(text)), Syntax.XHTML_1_0);
+    }
+
+    private String escapeHtml(String text)
+    {
+        if (text == null) {
+            return null;
+        }
+        return text
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     private String renderToString(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
