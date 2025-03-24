@@ -48,10 +48,7 @@ public interface PlantUMLGenerator
     @Deprecated
     default void outputImage(String input, OutputStream output, String serverURL) throws IOException
     {
-        // TODO: Scheduled for removal in an upcoming release.
-        // Implementations prior to 2.4 have this method overridden.
-        // New implementations must override {@link #outputImage(String, OutputStream, String, PlantUMLDiagramFormat)}.
-        throw new UnsupportedOperationException("Deprecated method");
+        outputImage(input, output, serverURL, PlantUMLDiagramFormat.png);
     }
 
     /**
@@ -70,8 +67,7 @@ public interface PlantUMLGenerator
     default void outputImage(String input, OutputStream output, String serverURL, PlantUMLDiagramFormat format)
             throws IOException
     {
-        // TODO: After transition period, this default method implementation must be removed.
-        // Default method implementation is for backward compatibility only.
-        outputImage(input, output, serverURL);
+        // Default method implementation is for backward compatibility.
+        throw new IOException("Not implemented");
     }
 }
