@@ -37,13 +37,12 @@ public interface PlantUMLConfiguration
     String getPlantUMLServerURL();
 
     /**
-     * @return the (optional) PlantUML output format (e.g. {@code svg}, {@code png}, {@code txt})
-     * or null if not defined
+     * @return {@link PlantUMLDiagramFormat}
      * @since 2.4
      */
-    default String getPlantUMLOutputFormat()
+    default PlantUMLDiagramFormat getPlantUMLOutputFormat()
     {
         // fallback for backward compatibility
-        return null;
+        return PlantUMLDiagramFormat.png;
     }
 }

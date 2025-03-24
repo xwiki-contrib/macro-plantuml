@@ -166,7 +166,11 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     {
         PlantUMLDiagramFormat format = parameters.getFormat();
         if (format == null) {
-            format = PlantUMLDiagramFormat.fromString(this.configuration.getPlantUMLOutputFormat());
+            format = this.configuration.getPlantUMLOutputFormat();
+            if (format == null) {
+                // fallback if mocked configuration implementation returns null
+                format = PlantUMLDiagramFormat.png;
+            }
         }
         return format;
     }
