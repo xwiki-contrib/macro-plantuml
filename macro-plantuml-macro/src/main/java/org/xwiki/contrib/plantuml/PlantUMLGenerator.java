@@ -34,7 +34,7 @@ import org.xwiki.component.annotation.Role;
 public interface PlantUMLGenerator
 {
     /**
-     * Generate the image in the passed output parameter, using PlantUML.
+     * Generate the image using the passed output parameter, using PlantUML.
      *
      * @param input the textual definition input
      * @param output the stream into which the generated image will be written to
@@ -52,7 +52,7 @@ public interface PlantUMLGenerator
     }
 
     /**
-     * Generate the image in the passed output parameter, using PlantUML.
+     * Generate the image using the passed output parameter, using PlantUML.
      *
      * @param input the textual definition input
      * @param output the stream into which the generated image will be written to
@@ -65,7 +65,7 @@ public interface PlantUMLGenerator
      * @since 2.4
      */
     default void outputImage(String input, OutputStream output, String serverURL, PlantUMLDiagramFormat format)
-            throws IOException
+        throws IOException
     {
         // Default method implementation is for backward compatibility.
         throw new IOException("Not implemented");

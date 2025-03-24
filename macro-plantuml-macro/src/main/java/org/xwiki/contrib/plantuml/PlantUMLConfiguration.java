@@ -42,7 +42,7 @@ public interface PlantUMLConfiguration
      */
     default PlantUMLDiagramFormat getPlantUMLOutputFormat()
     {
-        // fallback for backward compatibility
+        // Fallback for backward compatibility
         return PlantUMLDiagramFormat.png;
     }
 }

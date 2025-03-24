@@ -22,7 +22,7 @@ package org.xwiki.contrib.plantuml;
 import net.sourceforge.plantuml.FileFormat;
 
 /**
- * Map macro parameter to PlantUML File Format for internal rendering and Path Parameter for external rendering.
+ * Represents PlantUML diagram output formats (SVG, PNG, TXT).
  *
  * @version $Id$
  * @since 2.4
@@ -57,7 +57,7 @@ public enum PlantUMLDiagramFormat
 
     /**
      * Get FileFormat enum element for internal (local) rendering.
-     * @return PlantUML FileFormat
+     * @return the PlantUML file format to use
      */
     public FileFormat getFileFormat()
     {

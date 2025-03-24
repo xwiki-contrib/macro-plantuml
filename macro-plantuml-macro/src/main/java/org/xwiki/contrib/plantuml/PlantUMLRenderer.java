@@ -45,5 +45,5 @@ public interface PlantUMLRenderer
      * @throws MacroExecutionException if generating or rendering of the diagram fails
      */
     Block renderDiagram(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
-            throws MacroExecutionException;
+        throws MacroExecutionException;
 }

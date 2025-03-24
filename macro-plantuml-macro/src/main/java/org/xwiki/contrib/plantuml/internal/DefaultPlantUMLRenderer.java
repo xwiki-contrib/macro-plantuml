@@ -52,7 +52,6 @@ import java.util.Map;
 @Singleton
 public class DefaultPlantUMLRenderer implements PlantUMLRenderer
 {
-
     @Inject
     private PlantUMLGenerator plantUMLGenerator;
 
