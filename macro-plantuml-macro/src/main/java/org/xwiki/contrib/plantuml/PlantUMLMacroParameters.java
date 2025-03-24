@@ -38,6 +38,8 @@ public class PlantUMLMacroParameters
 
     private PlantUMLDiagramType type;
 
+    private PlantUMLDiagramFormat format;
+
     /**
      * @param serverURL see {@link #getServer()}
      */
@@ -48,11 +50,30 @@ public class PlantUMLMacroParameters
     }
 
     /**
-     * @return the (optional) PlantUML server URL (e.g. {@code http://www.plantuml.com/plantuml})
+     * @return the (optional) PlantUML server URL (e.g. {@code https://www.plantuml.com/plantuml})
      */
     public String getServer()
     {
         return this.serverURL;
+    }
+
+    /**
+     * @param format see {@link #getFormat()}
+     * @since 2.4
+     */
+    @PropertyDescription("the PlantUML diagram output format")
+    public void setFormat(PlantUMLDiagramFormat format)
+    {
+        this.format = format;
+    }
+
+    /**
+     * @return (optional) PlantUML diagram output format (see {@link PlantUMLDiagramFormat})
+     * @since 2.4
+     */
+    public PlantUMLDiagramFormat getFormat()
+    {
+        return format;
     }
 
     /**
@@ -104,6 +125,7 @@ public class PlantUMLMacroParameters
         PlantUMLMacroParameters rhs = (PlantUMLMacroParameters) object;
         return new EqualsBuilder()
             .append(getServer(), rhs.getServer())
+            .append(getFormat(), rhs.getFormat())
             .isEquals();
     }
 
@@ -112,6 +134,7 @@ public class PlantUMLMacroParameters
     {
         return new HashCodeBuilder(5, 37)
             .append(getServer())
+            .append(getFormat())
             .toHashCode();
     }
 }

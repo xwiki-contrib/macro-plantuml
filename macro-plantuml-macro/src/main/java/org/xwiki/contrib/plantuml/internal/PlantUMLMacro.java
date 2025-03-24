@@ -19,8 +19,6 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,18 +33,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
+import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
-import org.xwiki.contrib.plantuml.PlantUMLGenerator;
+import org.xwiki.contrib.plantuml.PlantUMLRenderer;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
-import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
 import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.CompositeBlock;
 import org.xwiki.rendering.block.GroupBlock;
-import org.xwiki.rendering.block.ImageBlock;
-import org.xwiki.rendering.listener.reference.ResourceReference;
-import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
@@ -87,11 +82,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     private Provider<PlantUMLBlockAsyncRenderer> asyncRendererProvider;
 
     @Inject
-    private PlantUMLGenerator plantUMLGenerator;
-
-    @Inject
-    @Named("tmp")
-    private ImageWriter imageWriter;
+    private PlantUMLRenderer plantUMLRenderer;
 
     @Inject
     private PlantUMLConfiguration configuration;
@@ -149,18 +140,11 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
 
-        String imageId = getImageId(wrappedContent);
-        try (OutputStream os = this.imageWriter.getOutputStream(imageId)) {
-            this.plantUMLGenerator.outputImage(wrappedContent, os, computeServer(parameters));
-        } catch (IOException e) {
-            throw new MacroExecutionException(
-                String.format("Failed to generate an image using PlantUML for content [%s]", wrappedContent), e);
-        }
-
-        // Return the image block pointing to the generated image.
-        ResourceReference resourceReference =
-            new ResourceReference(this.imageWriter.getURL(imageId).serialize(), ResourceType.URL);
-        Block resultBlock = new ImageBlock(resourceReference, false);
+        Block resultBlock = plantUMLRenderer.renderDiagram(
+                wrappedContent,
+                computeServer(parameters),
+                computeFormat(parameters)
+        );
 
         // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
         if (!isInline) {
@@ -178,9 +162,17 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return serverURL;
     }
 
-    private String getImageId(String content)
+    private PlantUMLDiagramFormat computeFormat(PlantUMLMacroParameters parameters)
     {
-        return String.valueOf(content.hashCode());
+        PlantUMLDiagramFormat format = parameters.getFormat();
+        if (format == null) {
+            format = this.configuration.getPlantUMLOutputFormat();
+            if (format == null) {
+                // fallback if mocked configuration implementation returns null
+                format = PlantUMLDiagramFormat.png;
+            }
+        }
+        return format;
     }
 
     private String maybeAddContentMarkers(String content, PlantUMLMacroParameters parameters)

@@ -34,15 +34,40 @@ import org.xwiki.component.annotation.Role;
 public interface PlantUMLGenerator
 {
     /**
-     * Generate the image in the passed output parameter, using PlantUML.
+     * Generate the image using the passed output parameter, using PlantUML.
      *
      * @param input the textual definition input
      * @param output the stream into which the generated image will be written to
-     * @param serverURL the optional plantUML server URL (e.g. {@code http://www.plantuml.com/plantuml}. If not an
+     * @param serverURL the optional plantUML server URL (e.g. {@code https://www.plantuml.com/plantuml}. If not an
      *        empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
      *        embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
      *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
      * @throws IOException when there's a generation or writing error
+     * @deprecated replaced with {@link #outputImage(String, OutputStream, String, PlantUMLDiagramFormat)}
      */
-    void outputImage(String input, OutputStream output, String serverURL) throws IOException;
+    @Deprecated
+    default void outputImage(String input, OutputStream output, String serverURL) throws IOException
+    {
+        outputImage(input, output, serverURL, PlantUMLDiagramFormat.png);
+    }
+
+    /**
+     * Generate the image using the passed output parameter, using PlantUML.
+     *
+     * @param input the textual definition input
+     * @param output the stream into which the generated image will be written to
+     * @param serverURL the optional plantUML server URL (e.g. {@code https://www.plantuml.com/plantuml}. If not an
+     *        empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
+     *        embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
+     *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
+     * @param format the diagram output format (see {@link PlantUMLDiagramFormat})
+     * @throws IOException when there's a generation or writing error
+     * @since 2.4
+     */
+    default void outputImage(String input, OutputStream output, String serverURL, PlantUMLDiagramFormat format)
+        throws IOException
+    {
+        // Default method implementation is for backward compatibility.
+        throw new IOException("Not implemented");
+    }
 }

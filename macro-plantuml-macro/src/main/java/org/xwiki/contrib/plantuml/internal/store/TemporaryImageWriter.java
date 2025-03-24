@@ -121,7 +121,7 @@ public class TemporaryImageWriter implements ImageWriter
 
     private TemporaryResourceReference getTemporaryResourceReference(String imageId)
     {
-        return new TemporaryResourceReference(MODULE_ID, String.format("%s.png", imageId),
+        return new TemporaryResourceReference(MODULE_ID, imageId,
             this.documentAccessBridge.getCurrentDocumentReference());
     }
 }

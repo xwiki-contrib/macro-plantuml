@@ -52,6 +52,10 @@
       <id>vmassol</id>
       <name>Vincent Massol</name>
     </developer>
+    <developer>
+      <id>pashutkin</id>
+      <name>Dennis Pashutkin</name>
+    </developer>
   </developers>
   <properties>
     <xwiki.issueManagement.jira.id>PLANTUML</xwiki.issueManagement.jira.id>

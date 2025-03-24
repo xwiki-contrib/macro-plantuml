@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
+import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 
 /**
  * Implementation of the PlantUML configuration.
@@ -55,5 +56,12 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
             serverURL = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server");
         }
         return serverURL;
+    }
+
+    @Override
+    public PlantUMLDiagramFormat getPlantUMLOutputFormat()
+    {
+        String format = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format", "png");
+        return PlantUMLDiagramFormat.fromString(format);
     }
 }
