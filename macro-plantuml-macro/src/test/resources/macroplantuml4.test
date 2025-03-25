@@ -1,0 +1,14 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.1
+.# Test the PlantUML macro with svg format parameter
+.#-----------------------------------------------------
+{{plantuml format="svg"}}
+@startuml
+Bob -> Alice : hello
+@enduml
+{{/plantuml}}
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div><svg ${{{regex:.+?}}} data-diagram-type="SEQUENCE"${{{regex:.+?}}}<title>Bob</title>${{{regex:.+?}}}<title>Alice</title>${{{regex:.+?}}}</svg></div>
