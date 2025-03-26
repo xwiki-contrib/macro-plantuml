@@ -1,0 +1,14 @@
+.runTransformations
+.#-----------------------------------------------------
+.input|xwiki/2.1
+.# Test the PlantUML macro with txt format parameter
+.#-----------------------------------------------------
+{{plantuml format="txt"}}
+@startuml
+Bob -> Alice : hello
+@enduml
+{{/plantuml}}
+.#-----------------------------------------------------
+.expect|xhtml/1.0
+.#-----------------------------------------------------
+<div><pre>${{{regex:.+?}}}|Bob|${{{regex:.+?}}}|Alice|${{{regex:.+?}}}hello${{{regex:.+?}}}-&gt;|${{{regex:.+?}}}</pre></div>
