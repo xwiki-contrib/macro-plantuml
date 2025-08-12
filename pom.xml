@@ -33,7 +33,6 @@
   <packaging>pom</packaging>
   <name>PlantUML Macro - Parent POM</name>
   <description>Parent POM for the PlantUML modules</description>
-  <url>http://extensions.xwiki.org/xwiki/bin/view/Extension/JIRA%20Macro</url>
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/macro-plantuml.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/macro-plantuml.git</developerConnection>
