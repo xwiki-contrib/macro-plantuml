@@ -57,6 +57,8 @@
     </developer>
   </developers>
   <properties>
+    <!-- Name of the Project page on extensions.xwiki.org; each extension module sets its own -->
+    <xwiki.extension.name>PlantUML</xwiki.extension.name>
     <xwiki.issueManagement.jira.id>PLANTUML</xwiki.issueManagement.jira.id>
     <xwiki.release.jira.skip>false</xwiki.release.jira.skip>
   </properties>
