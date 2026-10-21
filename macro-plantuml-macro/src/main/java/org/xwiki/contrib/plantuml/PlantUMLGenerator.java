@@ -40,8 +40,8 @@ public interface PlantUMLGenerator
      * @param output the stream into which the generated image will be written to
      * @param serverURL the optional plantUML server URL (e.g. {@code https://www.plantuml.com/plantuml}. If not an
      *        empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
-     *        embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
-     *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
+     *        embedded mode, using the bundled PlantUML library (GraphViz doesn't need to be installed: without it,
+     *        PlantUML lays out the diagrams with its built-in layout engine).
      * @throws IOException when there's a generation or writing error
      * @deprecated replaced with {@link #outputImage(String, OutputStream, String, PlantUMLDiagramFormat)}
      */
@@ -58,8 +58,8 @@ public interface PlantUMLGenerator
      * @param output the stream into which the generated image will be written to
      * @param serverURL the optional plantUML server URL (e.g. {@code https://www.plantuml.com/plantuml}. If not an
      *        empty string or not null then the URL is called to get the generated image. Otherwise PlantUML works in
-     *        embedded mode (requires installation of Graphviz locally for most diagram types, and the {@code
-     *        GRAPHVIZ_DOT} environment variable must be set to point to the path of the GraphViz executable).
+     *        embedded mode, using the bundled PlantUML library (GraphViz doesn't need to be installed: without it,
+     *        PlantUML lays out the diagrams with its built-in layout engine).
      * @param format the diagram output format (see {@link PlantUMLDiagramFormat})
      * @throws IOException when there's a generation or writing error
      * @since 2.4
