@@ -141,8 +141,8 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
     }
 
-    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline)
-        throws MacroExecutionException
+    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline,
+        boolean isRestricted) throws MacroExecutionException
     {
         String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
@@ -150,7 +150,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         Block resultBlock = plantUMLRenderer.renderDiagram(
                 wrappedContent,
                 computeServer(parameters),
-                computeFormat(parameters)
+                computeFormat(parameters, isRestricted)
         );
 
         // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
@@ -189,7 +189,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return serverURL;
     }
 
-    private PlantUMLDiagramFormat computeFormat(PlantUMLMacroParameters parameters)
+    private PlantUMLDiagramFormat computeFormat(PlantUMLMacroParameters parameters, boolean isRestricted)
     {
         PlantUMLDiagramFormat format = parameters.getFormat();
         if (format == null) {
@@ -198,6 +198,10 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
                 // fallback if mocked configuration implementation returns null
                 format = PlantUMLDiagramFormat.png;
             }
+        }
+        // Don't output any raw HTML when the content is rendered in restricted mode (e.g. for comments).
+        if (isRestricted && format == PlantUMLDiagramFormat.svg) {
+            format = PlantUMLDiagramFormat.png;
         }
         return format;
     }

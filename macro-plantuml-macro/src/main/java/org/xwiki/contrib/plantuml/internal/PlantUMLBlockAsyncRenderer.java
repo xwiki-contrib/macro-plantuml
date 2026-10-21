@@ -78,6 +78,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
 
     private boolean isInline;
 
+    private boolean isRestricted;
+
     void initialize(PlantUMLMacro macro, PlantUMLMacroParameters parameters, String content,
         MacroTransformationContext context)
     {
@@ -86,6 +88,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         this.content = content;
         this.targetSyntax = context.getTransformationContext().getTargetSyntax();
         this.isInline = context.isInline();
+        this.isRestricted = context.getTransformationContext().isRestricted();
 
         String source = getCurrentSource(context);
         if (source != null) {
@@ -105,7 +108,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
             this.asyncContext.useEntity(this.sourceReference);
         }
         try {
-            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.isInline);
+            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.isInline,
+                this.isRestricted);
         } catch (MacroExecutionException e) {
             // Display the error in the result
             resultBlocks = this.errorBlockGenerator.generateErrorBlocks("Failed to execute the PlantUML macro", e,

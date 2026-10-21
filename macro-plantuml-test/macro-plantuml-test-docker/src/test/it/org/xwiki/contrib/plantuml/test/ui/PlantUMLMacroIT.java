@@ -32,6 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -46,6 +47,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 }, resolveExtraJARs = true)
 class PlantUMLMacroIT
 {
+    private static final String USER = "PlantUMLMacroUser";
+
     @Test
     @Order(1)
     void generateDiagrams(TestUtils setup, TestReference reference)
@@ -96,5 +99,28 @@ class PlantUMLMacroIT
         assertThat(diagrams.getErrors(), contains(allOf(containsString("Failed to execute the PlantUML macro"),
             containsString("The PlantUML Server URL [https://untrusted.example.org/plantuml] is not in the list of "
                 + "trusted domains."))));
+    }
+
+    @Test
+    @Order(2)
+    void diagramsInComments(TestUtils setup, TestReference reference)
+    {
+        setup.loginAsSuperAdmin();
+        setup.createPage(reference, String.join("\n",
+            "{{plantuml format=\"svg\"}}",
+            "Bob -> Alice : page message",
+            "{{/plantuml}}"));
+
+        setup.createUserAndLogin(USER, USER);
+        setup.addObject(reference, "XWiki.XWikiComments", "author", "XWiki." + USER, "comment", String.join("\n",
+            "{{plantuml format=\"svg\"}}",
+            "Bob -> Alice : comment message",
+            "{{/plantuml}}"));
+
+        // The comments are rendered in restricted mode, where diagrams are only generated as PNG images.
+        setup.gotoPage(reference, "view", "viewer=comments");
+        PlantUMLDiagramsElement commentDiagrams = PlantUMLDiagramsElement.inComments();
+        assertThat(commentDiagrams.getSVGDiagramTexts(), empty());
+        assertEquals(1, commentDiagrams.getDisplayedImageCount());
     }
 }
