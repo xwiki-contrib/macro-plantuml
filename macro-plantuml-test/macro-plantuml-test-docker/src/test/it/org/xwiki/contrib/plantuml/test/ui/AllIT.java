@@ -21,6 +21,7 @@ package org.xwiki.contrib.plantuml.test.ui;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.xwiki.test.docker.junit5.UITest;
 
 /**
@@ -28,6 +29,8 @@ import org.xwiki.test.docker.junit5.UITest;
  *
  * @version $Id$
  */
+// The PlantUML Server used by PlantUMLServerIT must be started before XWiki, which is started for all the nested tests.
+@ExtendWith(PlantUMLServerExtension.class)
 @UITest
 class AllIT
 {

@@ -67,23 +67,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <systemProperties combine.children="append">
-            <!-- XWiki must run in a Docker container (and not in a Jetty standalone started on the host, which is the
-                 default) so that it can reach the PlantUML Server container started by PlantUMLServerIT, through
-                 the Docker network. This is set for the whole module rather than in a @UITest annotation since a
-                 @UITest without servletEngine conflicts with one specifying another servlet engine. -->
-            <property>
-              <name>xwiki.test.ui.servletEngine</name>
-              <value>tomcat</value>
-            </property>
-            <!-- The latest Tomcat image implements the Jakarta Servlet API while XWiki 16.10 uses the javax one -->
-            <property>
-              <name>xwiki.test.ui.servletEngineTag</name>
-              <value>9-jdk17</value>
-            </property>
-          </systemProperties>
-        </configuration>
       </plugin>
     </plugins>
   </build>
