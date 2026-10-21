@@ -29,12 +29,13 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.poi.util.IOUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
@@ -60,6 +61,14 @@ import net.sourceforge.plantuml.security.SecurityUtils;
 public class DefaultPlantUMLGenerator implements PlantUMLGenerator, Initializable
 {
     private static final String SECURITY_PROFILE_PROPERTY = "PLANTUML_SECURITY_PROFILE";
+
+    private static final int DEFAULT_CONNECT_TIMEOUT = 10;
+
+    private static final int DEFAULT_RESPONSE_TIMEOUT = 30;
+
+    private static final long DEFAULT_MAX_RESPONSE_SIZE = 10L * 1024 * 1024;
+
+    private static final int BUFFER_SIZE = 8192;
 
     @Inject
     private PlantUMLConfiguration configuration;
@@ -124,7 +133,13 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator, Initializabl
         String compressedInput = TranscoderUtil.getDefaultTranscoder().encode(input);
         String fullURL = String.format("%s/%s/%s", baseURL, outputFormat, compressedInput);
         // Call the server and get the response
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(Timeout.ofSeconds(getPositiveOrDefault(
+                this.configuration.getPlantUMLServerConnectTimeout(), DEFAULT_CONNECT_TIMEOUT)))
+            .setResponseTimeout(Timeout.ofSeconds(getPositiveOrDefault(
+                this.configuration.getPlantUMLServerResponseTimeout(), DEFAULT_RESPONSE_TIMEOUT)))
+            .build();
+        try (CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             HttpGet httpGet = new HttpGet(fullURL);
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                 handleResponse(response, outputStream, fullURL);
@@ -140,12 +155,34 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator, Initializabl
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 try (InputStream inputStream = entity.getContent()) {
-                    IOUtils.copy(inputStream, outputStream);
+                    copy(inputStream, outputStream, fullURL);
                 }
             }
         } else {
             throw new IOException(String.format("Unexpected response status for [%s] : [%s]", fullURL,
                 status));
         }
+    }
+
+    private void copy(InputStream inputStream, OutputStream outputStream, String fullURL) throws IOException
+    {
+        long maxSize = getPositiveOrDefault(this.configuration.getPlantUMLServerMaxResponseSize(),
+            DEFAULT_MAX_RESPONSE_SIZE);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        long size = 0;
+        int count;
+        while ((count = inputStream.read(buffer)) != -1) {
+            size += count;
+            if (size > maxSize) {
+                throw new IOException(String.format("The response for [%s] exceeds the maximum allowed size of [%s] "
+                    + "bytes", fullURL, maxSize));
+            }
+            outputStream.write(buffer, 0, count);
+        }
+    }
+
+    private long getPositiveOrDefault(long value, long defaultValue)
+    {
+        return value > 0 ? value : defaultValue;
     }
 }

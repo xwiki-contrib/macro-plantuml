@@ -22,8 +22,16 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
@@ -35,10 +43,13 @@ import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
+import com.sun.net.httpserver.HttpServer;
+
 import net.sourceforge.plantuml.security.SecurityProfile;
 import net.sourceforge.plantuml.security.SecurityUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -64,6 +75,46 @@ class DefaultPlantUMLGeneratorTest
 
     @RegisterExtension
     private LogCaptureExtension logCapture = new LogCaptureExtension(LogLevel.WARN);
+
+    private HttpServer server;
+
+    private ExecutorService serverExecutor;
+
+    private String serverURL;
+
+    private byte[] responseBody = new byte[0];
+
+    private long responseDelay;
+
+    @BeforeEach
+    void setUp() throws Exception
+    {
+        this.server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        this.server.createContext("/", exchange -> {
+            try {
+                Thread.sleep(this.responseDelay);
+                exchange.sendResponseHeaders(200, this.responseBody.length);
+                try (OutputStream body = exchange.getResponseBody()) {
+                    body.write(this.responseBody);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                exchange.close();
+            }
+        });
+        this.serverExecutor = Executors.newCachedThreadPool();
+        this.server.setExecutor(this.serverExecutor);
+        this.server.start();
+        this.serverURL = String.format("http://localhost:%d/plantuml", this.server.getAddress().getPort());
+    }
+
+    @AfterEach
+    void tearDown()
+    {
+        this.server.stop(0);
+        this.serverExecutor.shutdownNow();
+    }
 
     @Test
     void outputImageWhenIncludingLocalFile() throws Exception
@@ -116,5 +167,42 @@ class DefaultPlantUMLGeneratorTest
         } finally {
             System.setProperty("PLANTUML_SECURITY_PROFILE", currentProfile.name());
         }
+    }
+
+    @Test
+    void outputImageWithServer() throws Exception
+    {
+        this.responseBody = "diagram".getBytes(UTF_8);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        this.generator.outputImage("Bob -> Alice", output, this.serverURL, PlantUMLDiagramFormat.png);
+
+        assertArrayEquals(this.responseBody, output.toByteArray());
+    }
+
+    @Test
+    void outputImageWithServerWhenResponseIsTooLarge()
+    {
+        when(this.configuration.getPlantUMLServerMaxResponseSize()).thenReturn(100L);
+        this.responseBody = new byte[101];
+        Arrays.fill(this.responseBody, (byte) 'a');
+
+        IOException exception = assertThrows(IOException.class, () -> this.generator.outputImage("Bob -> Alice",
+            new ByteArrayOutputStream(), this.serverURL, PlantUMLDiagramFormat.png));
+
+        assertTrue(exception.getMessage().endsWith("exceeds the maximum allowed size of [100] bytes"),
+            exception.getMessage());
+    }
+
+    @Test
+    void outputImageWithServerWhenResponseIsTooSlow()
+    {
+        when(this.configuration.getPlantUMLServerResponseTimeout()).thenReturn(1);
+        this.responseDelay = 5000;
+
+        long start = System.currentTimeMillis();
+        assertThrows(IOException.class, () -> this.generator.outputImage("Bob -> Alice",
+            new ByteArrayOutputStream(), this.serverURL, PlantUMLDiagramFormat.png));
+        assertTrue(System.currentTimeMillis() - start < 4000);
     }
 }

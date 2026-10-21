@@ -72,4 +72,22 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
     {
         return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.securityProfile");
     }
+
+    @Override
+    public int getPlantUMLServerConnectTimeout()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.connectTimeout", 0);
+    }
+
+    @Override
+    public int getPlantUMLServerResponseTimeout()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.responseTimeout", 0);
+    }
+
+    @Override
+    public long getPlantUMLServerMaxResponseSize()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.maxResponseSize", 0L);
+    }
 }
