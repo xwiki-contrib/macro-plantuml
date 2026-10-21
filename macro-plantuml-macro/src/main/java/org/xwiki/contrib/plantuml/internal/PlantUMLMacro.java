@@ -34,12 +34,14 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
 import org.xwiki.contrib.plantuml.PlantUMLRenderer;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
 import org.xwiki.rendering.block.Block;
@@ -49,6 +51,8 @@ import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.url.URLSecurityManager;
 
 /**
@@ -97,6 +101,12 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     @Inject
     private URLSecurityManager urlSecurityManager;
 
+    @Inject
+    private DocumentAccessBridge documentAccessBridge;
+
+    @Inject
+    private AuthorizationManager authorizationManager;
+
     /**
      * Create and initialize the descriptor of the macro.
      */
@@ -117,7 +127,28 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     public List<Block> execute(PlantUMLMacroParameters parameters, String content, MacroTransformationContext context)
         throws MacroExecutionException
     {
+        checkServerParameter(parameters, context);
         return executeAsync(parameters, content, context);
+    }
+
+    private void checkServerParameter(PlantUMLMacroParameters parameters, MacroTransformationContext context)
+        throws MacroExecutionException
+    {
+        // Only allow wiki administrators to choose the PlantUML server for a given macro call. This is checked before
+        // the asynchronous execution since it depends on the author of the content containing the macro call.
+        if (StringUtils.isNotBlank(parameters.getServer())
+            && (context.getTransformationContext().isRestricted() || !isCurrentAuthorWikiAdmin()))
+        {
+            throw new MacroExecutionException("The [server] parameter requires admin right on the wiki.");
+        }
+    }
+
+    private boolean isCurrentAuthorWikiAdmin()
+    {
+        // Without a current document, check admin right on the main wiki.
+        DocumentReference currentDocumentReference = this.documentAccessBridge.getCurrentDocumentReference();
+        return this.authorizationManager.hasAccess(Right.ADMIN, this.documentAccessBridge.getCurrentAuthorReference(),
+            currentDocumentReference != null ? currentDocumentReference.getWikiReference() : null);
     }
 
     private List<Block> executeAsync(PlantUMLMacroParameters parameters, String content,
@@ -163,7 +194,8 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     private String computeServer(PlantUMLMacroParameters parameters) throws MacroExecutionException
     {
         String serverURL = parameters.getServer();
-        if (serverURL == null) {
+        // A blank server parameter is considered as not set.
+        if (StringUtils.isBlank(serverURL)) {
             serverURL = this.configuration.getPlantUMLServerURL();
         }
 

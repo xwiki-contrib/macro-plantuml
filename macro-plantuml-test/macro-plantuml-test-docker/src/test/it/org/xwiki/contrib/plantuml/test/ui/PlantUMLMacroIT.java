@@ -116,13 +116,20 @@ class PlantUMLMacroIT
         setup.addObject(reference, "XWiki.XWikiComments", "author", "XWiki." + USER, "comment", String.join("\n",
             "{{plantuml format=\"svg\"}}",
             "Bob -> Alice : comment message",
+            "{{/plantuml}}",
+            "",
+            "{{plantuml server=\"https://untrusted.example.org/plantuml\"}}",
+            "Bob -> Alice : server message",
             "{{/plantuml}}"));
 
-        // The comments are rendered in restricted mode, where diagrams are only generated as PNG images.
+        // The comments are rendered in restricted mode, where diagrams are only generated as PNG images and the
+        // server parameter is not accepted.
         setup.gotoPage(reference, "view", "viewer=comments");
         PlantUMLDiagramsElement commentDiagrams = PlantUMLDiagramsElement.inComments();
         assertThat(commentDiagrams.getSVGDiagramTexts(), empty());
         assertEquals(1, commentDiagrams.getDisplayedImageCount());
+        assertThat(commentDiagrams.getErrors(),
+            contains(containsString("The [server] parameter requires admin right on the wiki.")));
 
         // The page still displays its own diagram after the comment diagrams have been generated.
         setup.gotoPage(reference);

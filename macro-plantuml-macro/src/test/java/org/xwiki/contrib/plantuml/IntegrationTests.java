@@ -31,9 +31,11 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.environment.Environment;
 import org.xwiki.environment.internal.StandardEnvironment;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
 import org.xwiki.rendering.test.integration.RenderingTestSuite;
 import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.test.XWikiTempDirUtil;
 import org.xwiki.test.annotation.AllComponents;
 import org.xwiki.test.mockito.MockitoComponentManager;
@@ -94,12 +96,17 @@ public class IntegrationTests
     @RenderingTestSuite.Initialized
     public void initialize(MockitoComponentManager componentManager) throws Exception
     {
-        componentManager.registerMockComponent(AuthorizationManager.class);
         componentManager.registerMockComponent(WikiDescriptorManager.class);
 
         DocumentAccessBridge dab = componentManager.registerMockComponent(DocumentAccessBridge.class);
         DocumentReference documentReference = new DocumentReference("wiki", "space", "page");
         when(dab.getCurrentDocumentReference()).thenReturn(documentReference);
+
+        // The author of the tested content is a wiki administrator, so that the server parameter can be used.
+        DocumentReference authorReference = new DocumentReference("wiki", "XWiki", "Admin");
+        when(dab.getCurrentAuthorReference()).thenReturn(authorReference);
+        AuthorizationManager authorizationManager = componentManager.registerMockComponent(AuthorizationManager.class);
+        when(authorizationManager.hasAccess(Right.ADMIN, authorReference, new WikiReference("wiki"))).thenReturn(true);
 
         StandardEnvironment environment = componentManager.getInstance(Environment.class);
         environment.setTemporaryDirectory(XWikiTempDirUtil.createTemporaryDirectory());
