@@ -67,7 +67,7 @@
       </server>
     </class>
     <property>
-      <server>http://www.plantuml.com/plantuml</server>
+      <server/>
     </property>
   </object>
   <object>
