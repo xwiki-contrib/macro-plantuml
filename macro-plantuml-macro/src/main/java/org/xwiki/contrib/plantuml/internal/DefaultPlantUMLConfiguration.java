@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
@@ -50,12 +51,13 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
     public String getPlantUMLServerURL()
     {
         String serverURL = this.plantUMLConfigurationSource.getProperty("server");
-        // The returned value can be null if no xobject has been defined on the wiki config page.
-        if (serverURL == null) {
+        // The returned value can be null if no xobject has been defined on the wiki config page, and empty if no
+        // server has been set in it (which is the default).
+        if (StringUtils.isBlank(serverURL)) {
             // Fallback to xwiki.properties
             serverURL = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server");
         }
-        return serverURL;
+        return StringUtils.isBlank(serverURL) ? null : serverURL;
     }
 
     @Override

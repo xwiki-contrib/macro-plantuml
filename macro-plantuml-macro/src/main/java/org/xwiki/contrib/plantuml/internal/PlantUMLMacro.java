@@ -173,7 +173,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         // for Admins only. Also, since that document is provided only when the PlantUML Administration extension is
         // installed, if that extension is not installed, a user could manually create that document and set any URL
         // in it.
-        if (serverURL != null) {
+        if (StringUtils.isNotBlank(serverURL)) {
             URL url;
             try {
                 url = new URL(serverURL);
