@@ -168,11 +168,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         }
 
         // Verify that the server is in the trusted domain list to avoid SSRF attacks.
-        // Note that we also need to verify that the URL points to a trusted source when it's provided through the
-        // configuration since it can be set in the PlantUML.PlantUMLConfig document, which is currently not protected
-        // for Admins only. Also, since that document is provided only when the PlantUML Administration extension is
-        // installed, if that extension is not installed, a user could manually create that document and set any URL
-        // in it.
+        // Note that we also verify the URL when it's provided through the configuration, as an additional safety.
         if (StringUtils.isNotBlank(serverURL)) {
             URL url;
             try {

@@ -29,6 +29,14 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.LocalDocumentReference;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.user.UserReference;
+import org.xwiki.user.UserReferenceSerializer;
+
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * Provides configuration from the {@code PlantUML.PlantUMLConfig} document in the current wiki, extracting the data
@@ -56,6 +64,13 @@ public class PlantUMLConfigClassDocumentConfigurationSource extends AbstractDocu
     @Inject
     private ModelContext modelContext;
 
+    @Inject
+    private AuthorizationManager authorizationManager;
+
+    @Inject
+    @Named("document")
+    private UserReferenceSerializer<DocumentReference> documentUserReferenceSerializer;
+
     @Override
     protected String getCacheId()
     {
@@ -74,5 +89,27 @@ public class PlantUMLConfigClassDocumentConfigurationSource extends AbstractDocu
     protected LocalDocumentReference getClassReference()
     {
         return CLASS_REFERENCE;
+    }
+
+    @Override
+    protected BaseObject getBaseObject() throws XWikiException
+    {
+        BaseObject baseObject = super.getBaseObject();
+
+        // Only use the configuration when the document holding it has been last saved by a wiki administrator.
+        if (baseObject != null) {
+            XWikiDocument document = baseObject.getOwnerDocument();
+            UserReference author = document.getAuthors().getEffectiveMetadataAuthor();
+            DocumentReference authorReference = this.documentUserReferenceSerializer.serialize(author);
+            if (!this.authorizationManager.hasAccess(Right.ADMIN, authorReference,
+                document.getDocumentReference().getWikiReference()))
+            {
+                this.logger.warn("Ignoring the PlantUML configuration from [{}] since its last author [{}] doesn't "
+                    + "have admin right on the wiki.", document.getDocumentReference(), authorReference);
+                return null;
+            }
+        }
+
+        return baseObject;
     }
 }
