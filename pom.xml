@@ -65,4 +65,12 @@
     <module>macro-plantuml-macro</module>
     <module>macro-plantuml-ui</module>
   </modules>
+  <profiles>
+    <profile>
+      <id>integration-tests</id>
+      <modules>
+        <module>macro-plantuml-test</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
