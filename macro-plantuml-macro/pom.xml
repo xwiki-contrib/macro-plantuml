@@ -156,4 +156,23 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables combine.children="append">
+            <!-- PlantUML reads java.util.prefs when generating an error diagram. On Linux, the JDK stores the user
+                 preferences under "<java.util.prefs.userRoot>/.java/.userPrefs" and logs "Created user preferences
+                 directory." to the console when that directory doesn't exist yet (e.g. on a fresh CI agent), which
+                 fails the console capture check. Point it to the test output directory, which already contains that
+                 directory (copied from src/test/resources), so that nothing is logged and nothing is written to the
+                 user's home. -->
+            <java.util.prefs.userRoot>${project.build.testOutputDirectory}</java.util.prefs.userRoot>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
