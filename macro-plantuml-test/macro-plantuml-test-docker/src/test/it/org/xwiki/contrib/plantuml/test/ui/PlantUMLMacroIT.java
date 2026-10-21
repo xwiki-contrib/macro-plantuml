@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -122,5 +123,10 @@ class PlantUMLMacroIT
         PlantUMLDiagramsElement commentDiagrams = PlantUMLDiagramsElement.inComments();
         assertThat(commentDiagrams.getSVGDiagramTexts(), empty());
         assertEquals(1, commentDiagrams.getDisplayedImageCount());
+
+        // The page still displays its own diagram after the comment diagrams have been generated.
+        setup.gotoPage(reference);
+        assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(),
+            contains(allOf(containsString("page message"), not(containsString("comment message")))));
     }
 }

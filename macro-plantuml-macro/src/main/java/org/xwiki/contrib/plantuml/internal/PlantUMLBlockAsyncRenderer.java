@@ -19,10 +19,12 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
@@ -170,7 +172,23 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         escapedSource = StringUtils.replaceEach(escapedSource, new String[] { "\\", "/" },
             new String[] { ESCAPE_CHAR_SLASH, ESCAPE_CHAR_BACKSLASH });
 
-        return createId("rendering", "macro", "plantuml", escapedSource, index);
+        // Include the restricted flag and a hash of the macro content and parameters so that a cached result is only
+        // reused for the same diagram, rendered in the same mode.
+        return createId("rendering", "macro", "plantuml", escapedSource, index,
+            this.isRestricted ? "restricted" : "unrestricted", computeHash());
+    }
+
+    private String computeHash()
+    {
+        StringBuilder builder = new StringBuilder();
+        for (Object value : Arrays.asList(this.content, this.parameters.getServer(), this.parameters.getFormat(),
+            this.parameters.getType(), this.parameters.getTitle()))
+        {
+            String stringValue = String.valueOf(value);
+            // Prefix each value with its length to avoid ambiguities between the values.
+            builder.append(stringValue.length()).append(':').append(stringValue);
+        }
+        return DigestUtils.sha256Hex(builder.toString());
     }
 
     private String getCurrentSource(MacroTransformationContext context)
