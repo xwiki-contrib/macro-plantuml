@@ -32,7 +32,8 @@
   <version>2.6-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>PlantUML Macro - Parent POM</name>
-  <description>Parent POM for the PlantUML modules</description>
+  <!-- Summary of the Project page on extensions.xwiki.org; each module sets its own description -->
+  <description>Draw diagrams in wiki pages from a textual definition, using PlantUML</description>
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/macro-plantuml.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/macro-plantuml.git</developerConnection>
