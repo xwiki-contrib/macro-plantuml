@@ -66,4 +66,10 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
         String format = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format", "png");
         return PlantUMLDiagramFormat.fromString(format);
     }
+
+    @Override
+    public String getPlantUMLSecurityProfile()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.securityProfile");
+    }
 }

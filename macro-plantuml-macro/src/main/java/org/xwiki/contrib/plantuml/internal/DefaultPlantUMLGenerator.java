@@ -22,7 +22,9 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +35,10 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.poi.util.IOUtils;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 
@@ -41,6 +46,8 @@ import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
+import net.sourceforge.plantuml.security.SecurityProfile;
+import net.sourceforge.plantuml.security.SecurityUtils;
 
 /**
  * Generate an image from a textual definition, using PlantUML.
@@ -50,8 +57,27 @@ import net.sourceforge.plantuml.FileFormatOption;
  */
 @Component
 @Singleton
-public class DefaultPlantUMLGenerator implements PlantUMLGenerator
+public class DefaultPlantUMLGenerator implements PlantUMLGenerator, Initializable
 {
+    private static final String SECURITY_PROFILE_PROPERTY = "PLANTUML_SECURITY_PROFILE";
+
+    @Inject
+    private PlantUMLConfiguration configuration;
+
+    @Inject
+    private Logger logger;
+
+    private SecurityProfile securityProfile;
+
+    @Override
+    public void initialize()
+    {
+        this.securityProfile = computeSecurityProfile();
+        // PlantUML reads its security profile from this system property only once, the first time it needs it, so it
+        // has to be set before any diagram is generated.
+        System.setProperty(SECURITY_PROFILE_PROPERTY, this.securityProfile.name());
+    }
+
     @Override
     public void outputImage(String input, OutputStream outputStream, String serverURL, PlantUMLDiagramFormat format)
             throws IOException
@@ -63,8 +89,29 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
         }
     }
 
+    private SecurityProfile computeSecurityProfile()
+    {
+        String profile = this.configuration.getPlantUMLSecurityProfile();
+        if (StringUtils.isNotBlank(profile)) {
+            try {
+                return SecurityProfile.valueOf(profile.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                this.logger.warn("Invalid PlantUML security profile [{}], using [{}] instead.", profile,
+                    SecurityProfile.SANDBOX);
+            }
+        }
+        return SecurityProfile.SANDBOX;
+    }
+
     private void internalGenerator(String input, OutputStream outputStream, FileFormat fileFormat) throws IOException
     {
+        // PlantUML can have been initialized with another security profile before this component (e.g. by another
+        // extension using PlantUML too), in which case the configured one cannot be applied anymore.
+        SecurityProfile currentProfile = SecurityUtils.getSecurityProfile();
+        if (currentProfile != this.securityProfile) {
+            throw new IOException(String.format("PlantUML uses the security profile [%s] instead of the configured "
+                + "one [%s]. Restart XWiki or use a PlantUML server.", currentProfile, this.securityProfile));
+        }
         new SourceStringReader(input).outputImage(outputStream, new FileFormatOption(fileFormat));
     }
 

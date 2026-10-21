@@ -45,4 +45,14 @@ public interface PlantUMLConfiguration
         // Fallback for backward compatibility
         return PlantUMLDiagramFormat.png;
     }
+
+    /**
+     * @return the name of the PlantUML security profile to use when generating diagrams in embedded mode (e.g.
+     *         {@code SANDBOX}, {@code ALLOWLIST}), or null to use the default one ({@code SANDBOX})
+     * @since 2.5
+     */
+    default String getPlantUMLSecurityProfile()
+    {
+        return null;
+    }
 }
