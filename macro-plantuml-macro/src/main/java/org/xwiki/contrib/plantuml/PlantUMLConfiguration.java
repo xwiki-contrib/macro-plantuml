@@ -45,4 +45,44 @@ public interface PlantUMLConfiguration
         // Fallback for backward compatibility
         return PlantUMLDiagramFormat.png;
     }
+
+    /**
+     * @return the name of the PlantUML security profile to use when generating diagrams in embedded mode (e.g.
+     *         {@code SANDBOX}, {@code ALLOWLIST}), or null to use the default one ({@code SANDBOX})
+     * @since 2.5
+     */
+    default String getPlantUMLSecurityProfile()
+    {
+        return null;
+    }
+
+    /**
+     * @return the maximum time in seconds to wait for establishing the connection to the PlantUML server, a
+     *         non-positive value meaning the default value (10 seconds)
+     * @since 2.5
+     */
+    default int getPlantUMLServerConnectTimeout()
+    {
+        return 0;
+    }
+
+    /**
+     * @return the maximum time in seconds to wait for data from the PlantUML server, a non-positive value meaning the
+     *         default value (30 seconds)
+     * @since 2.5
+     */
+    default int getPlantUMLServerResponseTimeout()
+    {
+        return 0;
+    }
+
+    /**
+     * @return the maximum size in bytes of a diagram returned by the PlantUML server, a non-positive value meaning the
+     *         default value (10 MB)
+     * @since 2.5
+     */
+    default long getPlantUMLServerMaxResponseSize()
+    {
+        return 0;
+    }
 }

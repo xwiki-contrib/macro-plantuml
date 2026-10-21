@@ -22,18 +22,24 @@ package org.xwiki.contrib.plantuml.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.poi.util.IOUtils;
+import org.apache.hc.core5.util.Timeout;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
 
@@ -41,6 +47,8 @@ import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
+import net.sourceforge.plantuml.security.SecurityProfile;
+import net.sourceforge.plantuml.security.SecurityUtils;
 
 /**
  * Generate an image from a textual definition, using PlantUML.
@@ -50,8 +58,35 @@ import net.sourceforge.plantuml.FileFormatOption;
  */
 @Component
 @Singleton
-public class DefaultPlantUMLGenerator implements PlantUMLGenerator
+public class DefaultPlantUMLGenerator implements PlantUMLGenerator, Initializable
 {
+    private static final String SECURITY_PROFILE_PROPERTY = "PLANTUML_SECURITY_PROFILE";
+
+    private static final int DEFAULT_CONNECT_TIMEOUT = 10;
+
+    private static final int DEFAULT_RESPONSE_TIMEOUT = 30;
+
+    private static final long DEFAULT_MAX_RESPONSE_SIZE = 10L * 1024 * 1024;
+
+    private static final int BUFFER_SIZE = 8192;
+
+    @Inject
+    private PlantUMLConfiguration configuration;
+
+    @Inject
+    private Logger logger;
+
+    private SecurityProfile securityProfile;
+
+    @Override
+    public void initialize()
+    {
+        this.securityProfile = computeSecurityProfile();
+        // PlantUML reads its security profile from this system property only once, the first time it needs it, so it
+        // has to be set before any diagram is generated.
+        System.setProperty(SECURITY_PROFILE_PROPERTY, this.securityProfile.name());
+    }
+
     @Override
     public void outputImage(String input, OutputStream outputStream, String serverURL, PlantUMLDiagramFormat format)
             throws IOException
@@ -63,8 +98,29 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
         }
     }
 
+    private SecurityProfile computeSecurityProfile()
+    {
+        String profile = this.configuration.getPlantUMLSecurityProfile();
+        if (StringUtils.isNotBlank(profile)) {
+            try {
+                return SecurityProfile.valueOf(profile.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                this.logger.warn("Invalid PlantUML security profile [{}], using [{}] instead.", profile,
+                    SecurityProfile.SANDBOX);
+            }
+        }
+        return SecurityProfile.SANDBOX;
+    }
+
     private void internalGenerator(String input, OutputStream outputStream, FileFormat fileFormat) throws IOException
     {
+        // PlantUML can have been initialized with another security profile before this component (e.g. by another
+        // extension using PlantUML too), in which case the configured one cannot be applied anymore.
+        SecurityProfile currentProfile = SecurityUtils.getSecurityProfile();
+        if (currentProfile != this.securityProfile) {
+            throw new IOException(String.format("PlantUML uses the security profile [%s] instead of the configured "
+                + "one [%s]. Restart XWiki or use a PlantUML server.", currentProfile, this.securityProfile));
+        }
         new SourceStringReader(input).outputImage(outputStream, new FileFormatOption(fileFormat));
     }
 
@@ -77,7 +133,13 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
         String compressedInput = TranscoderUtil.getDefaultTranscoder().encode(input);
         String fullURL = String.format("%s/%s/%s", baseURL, outputFormat, compressedInput);
         // Call the server and get the response
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(Timeout.ofSeconds(getPositiveOrDefault(
+                this.configuration.getPlantUMLServerConnectTimeout(), DEFAULT_CONNECT_TIMEOUT)))
+            .setResponseTimeout(Timeout.ofSeconds(getPositiveOrDefault(
+                this.configuration.getPlantUMLServerResponseTimeout(), DEFAULT_RESPONSE_TIMEOUT)))
+            .build();
+        try (CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             HttpGet httpGet = new HttpGet(fullURL);
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                 handleResponse(response, outputStream, fullURL);
@@ -93,12 +155,34 @@ public class DefaultPlantUMLGenerator implements PlantUMLGenerator
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 try (InputStream inputStream = entity.getContent()) {
-                    IOUtils.copy(inputStream, outputStream);
+                    copy(inputStream, outputStream, fullURL);
                 }
             }
         } else {
             throw new IOException(String.format("Unexpected response status for [%s] : [%s]", fullURL,
                 status));
         }
+    }
+
+    private void copy(InputStream inputStream, OutputStream outputStream, String fullURL) throws IOException
+    {
+        long maxSize = getPositiveOrDefault(this.configuration.getPlantUMLServerMaxResponseSize(),
+            DEFAULT_MAX_RESPONSE_SIZE);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        long size = 0;
+        int count;
+        while ((count = inputStream.read(buffer)) != -1) {
+            size += count;
+            if (size > maxSize) {
+                throw new IOException(String.format("The response for [%s] exceeds the maximum allowed size of [%s] "
+                    + "bytes", fullURL, maxSize));
+            }
+            outputStream.write(buffer, 0, count);
+        }
+    }
+
+    private long getPositiveOrDefault(long value, long defaultValue)
+    {
+        return value > 0 ? value : defaultValue;
     }
 }

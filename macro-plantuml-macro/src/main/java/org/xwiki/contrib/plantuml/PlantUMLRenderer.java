@@ -36,7 +36,8 @@ public interface PlantUMLRenderer
      * Render specific {@link org.xwiki.rendering.block.Block} on the basis of generated diagram and output format.
      * Depending on the {@link PlantUMLDiagramFormat} returned Block can be
      * either {@link org.xwiki.rendering.block.ImageBlock} for image resource
-     * or {@link org.xwiki.rendering.block.RawBlock} for embedded text.
+     * or {@link org.xwiki.rendering.block.RawBlock} for embedded (cleaned) SVG
+     * or {@link org.xwiki.rendering.block.VerbatimBlock} for text.
      *
      * @param content diagram as a code (see {@link PlantUMLGenerator#outputImage})
      * @param serverURL optional generator URL  (see {@link PlantUMLGenerator#outputImage})

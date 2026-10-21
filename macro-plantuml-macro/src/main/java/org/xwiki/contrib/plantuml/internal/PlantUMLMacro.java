@@ -34,12 +34,14 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
 import org.xwiki.contrib.plantuml.PlantUMLRenderer;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.async.internal.AsyncRendererConfiguration;
 import org.xwiki.rendering.async.internal.block.BlockAsyncRendererExecutor;
 import org.xwiki.rendering.block.Block;
@@ -49,6 +51,8 @@ import org.xwiki.rendering.macro.AbstractMacro;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.macro.descriptor.DefaultContentDescriptor;
 import org.xwiki.rendering.transformation.MacroTransformationContext;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.url.URLSecurityManager;
 
 /**
@@ -97,6 +101,12 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     @Inject
     private URLSecurityManager urlSecurityManager;
 
+    @Inject
+    private DocumentAccessBridge documentAccessBridge;
+
+    @Inject
+    private AuthorizationManager authorizationManager;
+
     /**
      * Create and initialize the descriptor of the macro.
      */
@@ -117,7 +127,28 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     public List<Block> execute(PlantUMLMacroParameters parameters, String content, MacroTransformationContext context)
         throws MacroExecutionException
     {
+        checkServerParameter(parameters, context);
         return executeAsync(parameters, content, context);
+    }
+
+    private void checkServerParameter(PlantUMLMacroParameters parameters, MacroTransformationContext context)
+        throws MacroExecutionException
+    {
+        // Only allow wiki administrators to choose the PlantUML server for a given macro call. This is checked before
+        // the asynchronous execution since it depends on the author of the content containing the macro call.
+        if (StringUtils.isNotBlank(parameters.getServer())
+            && (context.getTransformationContext().isRestricted() || !isCurrentAuthorWikiAdmin()))
+        {
+            throw new MacroExecutionException("The [server] parameter requires admin right on the wiki.");
+        }
+    }
+
+    private boolean isCurrentAuthorWikiAdmin()
+    {
+        // Without a current document, check admin right on the main wiki.
+        DocumentReference currentDocumentReference = this.documentAccessBridge.getCurrentDocumentReference();
+        return this.authorizationManager.hasAccess(Right.ADMIN, this.documentAccessBridge.getCurrentAuthorReference(),
+            currentDocumentReference != null ? currentDocumentReference.getWikiReference() : null);
     }
 
     private List<Block> executeAsync(PlantUMLMacroParameters parameters, String content,
@@ -141,8 +172,8 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
     }
 
-    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline)
-        throws MacroExecutionException
+    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline,
+        boolean isRestricted) throws MacroExecutionException
     {
         String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
@@ -150,7 +181,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         Block resultBlock = plantUMLRenderer.renderDiagram(
                 wrappedContent,
                 computeServer(parameters),
-                computeFormat(parameters)
+                computeFormat(parameters, isRestricted)
         );
 
         // Wrap in a DIV if not inline (we need that since an IMG is an inline element otherwise)
@@ -163,16 +194,13 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
     private String computeServer(PlantUMLMacroParameters parameters) throws MacroExecutionException
     {
         String serverURL = parameters.getServer();
-        if (serverURL == null) {
+        // A blank server parameter is considered as not set.
+        if (StringUtils.isBlank(serverURL)) {
             serverURL = this.configuration.getPlantUMLServerURL();
         }
 
         // Verify that the server is in the trusted domain list to avoid SSRF attacks.
-        // Note that we also need to verify that the URL points to a trusted source when it's provided through the
-        // configuration since it can be set in the PlantUML.PlantUMLConfig document, which is currently not protected
-        // for Admins only. Also, since that document is provided only when the PlantUML Administration extension is
-        // installed, if that extension is not installed, a user could manually create that document and set any URL
-        // in it.
+        // Note that we also verify the URL when it's provided through the configuration, as an additional safety.
         if (StringUtils.isNotBlank(serverURL)) {
             URL url;
             try {
@@ -189,7 +217,7 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return serverURL;
     }
 
-    private PlantUMLDiagramFormat computeFormat(PlantUMLMacroParameters parameters)
+    private PlantUMLDiagramFormat computeFormat(PlantUMLMacroParameters parameters, boolean isRestricted)
     {
         PlantUMLDiagramFormat format = parameters.getFormat();
         if (format == null) {
@@ -198,6 +226,10 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
                 // fallback if mocked configuration implementation returns null
                 format = PlantUMLDiagramFormat.png;
             }
+        }
+        // Don't output any raw HTML when the content is rendered in restricted mode (e.g. for comments).
+        if (isRestricted && format == PlantUMLDiagramFormat.svg) {
+            format = PlantUMLDiagramFormat.png;
         }
         return format;
     }

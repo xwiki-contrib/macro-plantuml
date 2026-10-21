@@ -36,7 +36,7 @@
     <xwiki.extension.name>PlantUML Macro</xwiki.extension.name>
     <!-- The extension's category -->
     <xwiki.extension.category>macro</xwiki.extension.category>
-    <xwiki.jacoco.instructionRatio>0.66</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.76</xwiki.jacoco.instructionRatio>
     <!-- Allow upgrading from v1.x -->
     <xwiki.extension.features>org.xwiki.contrib.plantuml:macro-plantuml-macro</xwiki.extension.features>
   </properties>
@@ -54,7 +54,15 @@
     <dependency>
       <groupId>net.sourceforge.plantuml</groupId>
       <artifactId>plantuml</artifactId>
-      <version>1.2025.2</version>
+      <version>1.2026.9</version>
+      <exclusions>
+        <!-- Guava is a core extension of XWiki, so use XWiki's version (PlantUML's dependencies ask for a more recent
+             one, which would fail the upper bound check) -->
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.xwiki.rendering</groupId>
@@ -75,6 +83,11 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-configuration-default</artifactId>
       <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-xml</artifactId>
+      <version>${commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -115,6 +128,13 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-url-default</artifactId>
       <version>${platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-xml</artifactId>
+      <version>${commons.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

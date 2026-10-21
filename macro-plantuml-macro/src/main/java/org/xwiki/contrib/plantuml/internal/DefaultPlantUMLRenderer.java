@@ -19,6 +19,8 @@
  */
 package org.xwiki.contrib.plantuml.internal;
 
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLGenerator;
@@ -27,10 +29,15 @@ import org.xwiki.contrib.plantuml.internal.store.ImageWriter;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.ImageBlock;
 import org.xwiki.rendering.block.RawBlock;
+import org.xwiki.rendering.block.VerbatimBlock;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.macro.MacroExecutionException;
 import org.xwiki.rendering.syntax.Syntax;
+import org.xwiki.xml.html.HTMLCleaner;
+import org.xwiki.xml.html.HTMLCleanerConfiguration;
+import org.xwiki.xml.html.HTMLConstants;
+import org.xwiki.xml.html.HTMLUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,6 +45,7 @@ import javax.inject.Singleton;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +66,9 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
     @Inject
     @Named("tmp")
     private ImageWriter imageWriter;
+
+    @Inject
+    private HTMLCleaner htmlCleaner;
 
     /**
      * Local functional interface to serve rendering registry.
@@ -94,25 +105,34 @@ public class DefaultPlantUMLRenderer implements PlantUMLRenderer
             throws MacroExecutionException
     {
         String text = renderToString(content, serverURL, diagramFormat);
-        return new RawBlock(text, Syntax.XHTML_1_0);
+        return new RawBlock(clean(text), Syntax.XHTML_1_0);
     }
 
     private Block renderPreBlock(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)
             throws MacroExecutionException
     {
         String text = renderToString(content, serverURL, diagramFormat);
-        return new RawBlock(String.format("<pre>\n%s\n</pre>", escapeHtml(text)), Syntax.XHTML_1_0);
+        return new VerbatimBlock(text, false);
     }
 
-    private String escapeHtml(String text)
+    private String clean(String html)
     {
-        if (text == null) {
-            return null;
-        }
-        return text
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;");
+        // In restricted mode, the HTML Cleaner removes the elements and attributes that are not allowed by the HTML
+        // sanitizer.
+        HTMLCleanerConfiguration configuration = this.htmlCleaner.getDefaultConfiguration();
+        Map<String, String> parameters = new HashMap<>(configuration.getParameters());
+        parameters.put(HTMLCleanerConfiguration.HTML_VERSION, "5");
+        parameters.put(HTMLCleanerConfiguration.RESTRICTED, Boolean.TRUE.toString());
+        configuration.setParameters(parameters);
+        Document document = this.htmlCleaner.clean(new StringReader(html), configuration);
+        HTMLUtils.stripHTMLEnvelope(document);
+        // The HTML Cleaner wraps the (inline) svg element in a paragraph, remove it.
+        HTMLUtils.stripFirstElementInside(document, HTMLConstants.TAG_HTML, HTMLConstants.TAG_P);
+        // Don't print the XML declaration nor the doctype.
+        String cleanedHTML = HTMLUtils.toString(document, true, true);
+        // Remove the top level html element, which is always present since the HTML Cleaner normalizes the HTML.
+        String content = StringUtils.substringAfter(cleanedHTML, '<' + HTMLConstants.TAG_HTML + '>');
+        return StringUtils.substringBeforeLast(content, "</" + HTMLConstants.TAG_HTML + '>');
     }
 
     private String renderToString(String content, String serverURL, PlantUMLDiagramFormat diagramFormat)

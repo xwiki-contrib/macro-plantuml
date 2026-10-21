@@ -66,4 +66,28 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
         String format = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format", "png");
         return PlantUMLDiagramFormat.fromString(format);
     }
+
+    @Override
+    public String getPlantUMLSecurityProfile()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.securityProfile");
+    }
+
+    @Override
+    public int getPlantUMLServerConnectTimeout()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.connectTimeout", 0);
+    }
+
+    @Override
+    public int getPlantUMLServerResponseTimeout()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.responseTimeout", 0);
+    }
+
+    @Override
+    public long getPlantUMLServerMaxResponseSize()
+    {
+        return this.xwikiPropertiesConfigurationSource.getProperty("plantuml.server.maxResponseSize", 0L);
+    }
 }
