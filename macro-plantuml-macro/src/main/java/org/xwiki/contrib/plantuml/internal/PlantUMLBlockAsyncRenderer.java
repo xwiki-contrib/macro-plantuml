@@ -86,6 +86,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
 
     private boolean isRestricted;
 
+    private String defaultStyle;
+
     void initialize(PlantUMLMacro macro, PlantUMLMacroParameters parameters, String content,
         MacroTransformationContext context)
     {
@@ -95,6 +97,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         this.targetSyntax = context.getTransformationContext().getTargetSyntax();
         this.isInline = context.isInline();
         this.isRestricted = context.getTransformationContext().isRestricted();
+        // Read the default style once, so that the diagram is generated with the style its cache key is computed from.
+        this.defaultStyle = this.configuration.getPlantUMLDefaultStyle();
 
         String source = getCurrentSource(context);
         if (source != null) {
@@ -114,7 +118,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
             this.asyncContext.useEntity(this.sourceReference);
         }
         try {
-            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.isInline,
+            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.defaultStyle, this.isInline,
                 this.isRestricted);
         } catch (MacroExecutionException e) {
             // Display the error in the result
@@ -186,7 +190,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
     {
         StringBuilder builder = new StringBuilder();
         for (Object value : Arrays.asList(this.content, this.parameters.getServer(), this.parameters.getFormat(),
-            this.parameters.getType(), this.parameters.getTitle(), this.configuration.getPlantUMLDefaultStyle()))
+            this.parameters.getType(), this.parameters.getTitle(), this.defaultStyle))
         {
             String stringValue = String.valueOf(value);
             // Prefix each value with its length to avoid ambiguities between the values.

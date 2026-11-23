@@ -39,6 +39,12 @@ final class DefaultStyleInserter
 
     private static final Pattern THEME_PATTERN = Pattern.compile("^\\s*!theme\\b", Pattern.MULTILINE);
 
+    // PlantUML block comments, which can span several lines.
+    private static final Pattern BLOCK_COMMENT_PATTERN = Pattern.compile("/'.*?'/", Pattern.DOTALL);
+
+    // PlantUML only renders the first diagram of the content.
+    private static final Pattern END_PATTERN = Pattern.compile("^\\s*@end", Pattern.MULTILINE);
+
     private static final Pattern START_TYPE_PATTERN = Pattern.compile("^@start([a-z]+)", Pattern.CASE_INSENSITIVE);
 
     /**
@@ -47,7 +53,8 @@ final class DefaultStyleInserter
      * verbatim, so the default style would end up drawn in the diagram or break it.
      */
     private static final Set<String> STYLABLE_TYPES =
-        Set.of("uml", "salt", "mindmap", "gantt", "wbs", "json", "yaml", "regex", "ebnf");
+        Set.of("uml", "salt", "mindmap", "gantt", "wbs", "json", "yaml", "regex", "ebnf", "nwdiag", "chen", "files",
+            "board", "wire");
 
     private DefaultStyleInserter()
     {
@@ -63,7 +70,7 @@ final class DefaultStyleInserter
      */
     static String insert(String content, String style)
     {
-        if (StringUtils.isBlank(style) || THEME_PATTERN.matcher(content).find()) {
+        if (StringUtils.isBlank(style) || setsItsOwnTheme(content)) {
             return content;
         }
 
@@ -75,5 +82,12 @@ final class DefaultStyleInserter
 
         // Insert the style just under the @start line, so that the diagram can still override any of its skinparams.
         return String.join(NEW_LINE, content.substring(0, index), style.strip(), content.substring(index + 1));
+    }
+
+    private static boolean setsItsOwnTheme(String content)
+    {
+        Matcher endMatcher = END_PATTERN.matcher(content);
+        String firstDiagram = endMatcher.find() ? content.substring(0, endMatcher.start()) : content;
+        return THEME_PATTERN.matcher(BLOCK_COMMENT_PATTERN.matcher(firstDiagram).replaceAll("")).find();
     }
 }

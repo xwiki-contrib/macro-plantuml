@@ -161,18 +161,19 @@ class PlantUMLMacroIT
         assertEquals("", administration.getDefaultStyle());
         administration.setDefaultStyle("!theme bluegray\nheader " + DEFAULT_STYLE_HEADER);
         administration.save();
-
-        // The diagrams already displayed are generated again with the new default style, except the ones setting
-        // their own theme.
-        setup.gotoPage(reference);
-        assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(), contains(
-            allOf(containsString(DEFAULT_STYLE_HEADER), containsString("default style")),
-            allOf(not(containsString(DEFAULT_STYLE_HEADER)), containsString("own theme"))));
-
-        // Go back to the default PlantUML style, which the tests executing afterwards on the same XWiki instance
-        // expect.
-        administration = PlantUMLAdministrationSectionPage.gotoPage();
-        administration.setDefaultStyle("");
-        administration.save();
+        try {
+            // The diagrams already displayed are generated again with the new default style, except the ones setting
+            // their own theme.
+            setup.gotoPage(reference);
+            assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(), contains(
+                allOf(containsString(DEFAULT_STYLE_HEADER), containsString("default style")),
+                allOf(not(containsString(DEFAULT_STYLE_HEADER)), containsString("own theme"))));
+        } finally {
+            // Go back to the default PlantUML style, which the tests executing afterwards on the same XWiki instance
+            // expect, even if the assertions above fail.
+            administration = PlantUMLAdministrationSectionPage.gotoPage();
+            administration.setDefaultStyle("");
+            administration.save();
+        }
     }
 }
