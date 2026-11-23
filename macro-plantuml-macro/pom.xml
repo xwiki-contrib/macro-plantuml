@@ -54,7 +54,7 @@
     <dependency>
       <groupId>net.sourceforge.plantuml</groupId>
       <artifactId>plantuml</artifactId>
-      <version>1.2026.9</version>
+      <version>1.2026.10</version>
       <exclusions>
         <!-- Guava is a core extension of XWiki, so use XWiki's version (PlantUML's dependencies ask for a more recent
              one, which would fail the upper bound check) -->
