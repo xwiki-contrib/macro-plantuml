@@ -183,8 +183,13 @@ class PlantUMLMacroTest
         this.macro.executeSync("Bob -> Alice", parameters, "!theme bluegray\nskinparam shadowing false\n", false,
             false);
 
-        verify(this.plantUMLRenderer).renderDiagram(eq("@startuml\n!theme bluegray\nskinparam shadowing false\n"
-            + "title Greeting\nBob -> Alice\n@enduml"), isNull(), any());
+        verify(this.plantUMLRenderer).renderDiagram(eq("""
+            @startuml
+            !theme bluegray
+            skinparam shadowing false
+            title Greeting
+            Bob -> Alice
+            @enduml"""), isNull(), any());
     }
 
     @Test

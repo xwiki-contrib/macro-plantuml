@@ -37,9 +37,12 @@ class DefaultStyleInserterTest
     @Test
     void insertAfterStartLine()
     {
+        String style = """
+             !theme bluegray
+            skinparam shadowing false
+            """;
         assertEquals("@startuml\n!theme bluegray\nskinparam shadowing false\nBob -> Alice\n@enduml",
-            DefaultStyleInserter.insert("@startuml\nBob -> Alice\n@enduml", " !theme bluegray\nskinparam shadowing "
-                + "false\n"));
+            DefaultStyleInserter.insert("@startuml\nBob -> Alice\n@enduml", style));
     }
 
     @ParameterizedTest
