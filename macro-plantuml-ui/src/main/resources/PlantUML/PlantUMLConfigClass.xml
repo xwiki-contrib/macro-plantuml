@@ -51,7 +51,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <editor>PureText</editor>
-      <hint>PlantUML lines (e.g. a !theme line followed by skinparam lines) inserted just after the @start line of every diagram that doesn't set its own !theme. Only applied to diagrams written in the PlantUML language (not to ditaa, dot or jcckit ones). Note that the line numbers in PlantUML error messages then include the inserted lines.</hint>
+      <hint/>
       <name>defaultStyle</name>
       <number>6</number>
       <picker>0</picker>
