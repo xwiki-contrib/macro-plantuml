@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -66,6 +67,9 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
     @Inject
     private ErrorBlockGenerator errorBlockGenerator;
 
+    @Inject
+    private PlantUMLConfiguration configuration;
+
     private List<String> id;
 
     private Syntax targetSyntax;
@@ -82,6 +86,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
 
     private boolean isRestricted;
 
+    private String defaultStyle;
+
     void initialize(PlantUMLMacro macro, PlantUMLMacroParameters parameters, String content,
         MacroTransformationContext context)
     {
@@ -91,6 +97,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         this.targetSyntax = context.getTransformationContext().getTargetSyntax();
         this.isInline = context.isInline();
         this.isRestricted = context.getTransformationContext().isRestricted();
+        // Read the default style once, so that the diagram is generated with the style its cache key is computed from.
+        this.defaultStyle = this.configuration.getPlantUMLDefaultStyle();
 
         String source = getCurrentSource(context);
         if (source != null) {
@@ -110,7 +118,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
             this.asyncContext.useEntity(this.sourceReference);
         }
         try {
-            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.isInline,
+            resultBlocks = this.macro.executeSync(this.content, this.parameters, this.defaultStyle, this.isInline,
                 this.isRestricted);
         } catch (MacroExecutionException e) {
             // Display the error in the result
@@ -172,8 +180,8 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
         escapedSource = StringUtils.replaceEach(escapedSource, new String[] { "\\", "/" },
             new String[] { ESCAPE_CHAR_SLASH, ESCAPE_CHAR_BACKSLASH });
 
-        // Include the restricted flag and a hash of the macro content and parameters so that a cached result is only
-        // reused for the same diagram, rendered in the same mode.
+        // Include the restricted flag and a hash of the macro content, parameters and default style so that a cached
+        // result is only reused for the same diagram, rendered in the same mode and with the same style.
         return createId("rendering", "macro", "plantuml", escapedSource, index,
             this.isRestricted ? "restricted" : "unrestricted", computeHash());
     }
@@ -182,7 +190,7 @@ public class PlantUMLBlockAsyncRenderer extends AbstractBlockAsyncRenderer
     {
         StringBuilder builder = new StringBuilder();
         for (Object value : Arrays.asList(this.content, this.parameters.getServer(), this.parameters.getFormat(),
-            this.parameters.getType(), this.parameters.getTitle()))
+            this.parameters.getType(), this.parameters.getTitle(), this.defaultStyle))
         {
             String stringValue = String.valueOf(value);
             // Prefix each value with its length to avoid ambiguities between the values.

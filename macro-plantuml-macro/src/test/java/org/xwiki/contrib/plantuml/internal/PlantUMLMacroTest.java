@@ -140,7 +140,7 @@ class PlantUMLMacroTest
 
         // A blank server is considered as not set, and since there's no configured server, the diagram is generated
         // by XWiki.
-        this.macro.executeSync("Bob -> Alice", parameters, false, false);
+        this.macro.executeSync("Bob -> Alice", parameters, null, false, false);
         verify(this.plantUMLRenderer).renderDiagram(anyString(), isNull(), any());
     }
 
@@ -158,7 +158,7 @@ class PlantUMLMacroTest
         PlantUMLMacroParameters parameters = new PlantUMLMacroParameters();
         parameters.setFormat(PlantUMLDiagramFormat.svg);
 
-        this.macro.executeSync("Bob -> Alice", parameters, false, false);
+        this.macro.executeSync("Bob -> Alice", parameters, null, false, false);
 
         verify(this.plantUMLRenderer).renderDiagram(anyString(), isNull(), eq(PlantUMLDiagramFormat.svg));
     }
@@ -169,10 +169,41 @@ class PlantUMLMacroTest
         PlantUMLMacroParameters parameters = new PlantUMLMacroParameters();
         parameters.setFormat(PlantUMLDiagramFormat.svg);
 
-        this.macro.executeSync("Bob -> Alice", parameters, false, true);
+        this.macro.executeSync("Bob -> Alice", parameters, null, false, true);
 
         verify(this.plantUMLRenderer).renderDiagram(anyString(), isNull(), eq(PlantUMLDiagramFormat.png));
     }
+
+    @Test
+    void executeSyncWithDefaultStyle() throws Exception
+    {
+        PlantUMLMacroParameters parameters = new PlantUMLMacroParameters();
+        parameters.setTitle("Greeting");
+
+        this.macro.executeSync("Bob -> Alice", parameters, "!theme bluegray\nskinparam shadowing false\n", false,
+            false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("""
+            @startuml
+            !theme bluegray
+            skinparam shadowing false
+            title Greeting
+            Bob -> Alice
+            @enduml"""), isNull(), any());
+    }
+
+    @Test
+    void executeSyncWithDefaultStyleWhenDiagramHasStartMarker() throws Exception
+    {
+        this.macro.executeSync("@startmindmap\n* root\n@endmindmap", new PlantUMLMacroParameters(), "!theme bluegray",
+            false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startmindmap\n!theme bluegray\n* root\n@endmindmap"),
+            isNull(), any());
+    }
+
+
+
 
     private PlantUMLMacroParameters getParametersWithServer()
     {

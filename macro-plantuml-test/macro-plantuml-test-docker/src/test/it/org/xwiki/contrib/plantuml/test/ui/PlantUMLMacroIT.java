@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.xwiki.contrib.plantuml.test.po.PlantUMLAdministrationSectionPage;
 import org.xwiki.contrib.plantuml.test.po.PlantUMLDiagramsElement;
 import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
@@ -49,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PlantUMLMacroIT
 {
     private static final String USER = "PlantUMLMacroUser";
+
+    private static final String DEFAULT_STYLE_HEADER = "Default style header";
 
     @Test
     @Order(1)
@@ -135,5 +138,42 @@ class PlantUMLMacroIT
         setup.gotoPage(reference);
         assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(),
             contains(allOf(containsString("page message"), not(containsString("comment message")))));
+    }
+
+    @Test
+    @Order(3)
+    void defaultStyleConfiguredInAdministration(TestUtils setup, TestReference reference)
+    {
+        setup.loginAsSuperAdmin();
+        setup.createPage(reference, String.join("\n",
+            "{{plantuml format=\"svg\"}}",
+            "Bob -> Alice : default style",
+            "{{/plantuml}}",
+            "",
+            "{{plantuml format=\"svg\"}}",
+            "!theme plain",
+            "Bob -> Alice : own theme",
+            "{{/plantuml}}"));
+        assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(),
+            contains(not(containsString(DEFAULT_STYLE_HEADER)), not(containsString(DEFAULT_STYLE_HEADER))));
+
+        PlantUMLAdministrationSectionPage administration = PlantUMLAdministrationSectionPage.gotoPage();
+        assertEquals("", administration.getDefaultStyle());
+        administration.setDefaultStyle("!theme bluegray\nheader " + DEFAULT_STYLE_HEADER);
+        administration.save();
+        try {
+            // The diagrams already displayed are generated again with the new default style, except the ones setting
+            // their own theme.
+            setup.gotoPage(reference);
+            assertThat(new PlantUMLDiagramsElement().getSVGDiagramTexts(), contains(
+                allOf(containsString(DEFAULT_STYLE_HEADER), containsString("default style")),
+                allOf(not(containsString(DEFAULT_STYLE_HEADER)), containsString("own theme"))));
+        } finally {
+            // Go back to the default PlantUML style, which the tests executing afterwards on the same XWiki instance
+            // expect, even if the assertions above fail.
+            administration = PlantUMLAdministrationSectionPage.gotoPage();
+            administration.setDefaultStyle("");
+            administration.save();
+        }
     }
 }

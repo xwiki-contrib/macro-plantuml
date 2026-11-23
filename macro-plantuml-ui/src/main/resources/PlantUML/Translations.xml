@@ -42,6 +42,10 @@ plantuml.config.label.hint=Optional PlantUML server URL (leave empty for embedde
 plantuml.config.tooltip=Optional PlantUML server URL (leave empty for embedded mode), for example: http://www.plantuml.com/plantuml
 plantuml.config.save=Save
 plantuml.config.heading=PlantUML Preferences
+PlantUML.PlantUMLConfigClass_server=PlantUML Server URL
+PlantUML.PlantUMLConfigClass_server.hint=Leave empty to generate the diagrams inside XWiki. Otherwise, their sources are sent to this server, whose domain must be listed in url.trustedDomains.
+PlantUML.PlantUMLConfigClass_defaultStyle=Default Diagram Style
+PlantUML.PlantUMLConfigClass_defaultStyle.hint=PlantUML lines added at the top of every diagram, except ditaa, dot, jcckit and those setting their own "!theme". PlantUML error line numbers count them.
 </content>
   <object>
     <name>PlantUML.Translations</name>

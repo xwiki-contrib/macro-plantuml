@@ -172,10 +172,12 @@ public class PlantUMLMacro extends AbstractMacro<PlantUMLMacroParameters>
         return result instanceof CompositeBlock ? result.getChildren() : Arrays.asList(result);
     }
 
-    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, boolean isInline,
+    List<Block> executeSync(String content, PlantUMLMacroParameters parameters, String defaultStyle, boolean isInline,
         boolean isRestricted) throws MacroExecutionException
     {
-        String wrappedContent = maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters);
+        String wrappedContent =
+            DefaultStyleInserter.insert(maybeAddTitle(maybeAddContentMarkers(content, parameters), parameters),
+                defaultStyle);
         logger.debug("Rendering PlantUML diagram with content [{}]", wrappedContent);
 
         Block resultBlock = plantUMLRenderer.renderDiagram(

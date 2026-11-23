@@ -61,6 +61,15 @@ public class DefaultPlantUMLConfiguration implements PlantUMLConfiguration
     }
 
     @Override
+    public String getPlantUMLDefaultStyle()
+    {
+        // The returned value can be null if no xobject has been defined on the wiki config page, and empty if no
+        // default style has been set in it (which is the default).
+        String style = this.plantUMLConfigurationSource.getProperty("defaultStyle");
+        return StringUtils.isBlank(style) ? null : style;
+    }
+
+    @Override
     public PlantUMLDiagramFormat getPlantUMLOutputFormat()
     {
         String format = this.xwikiPropertiesConfigurationSource.getProperty("plantuml.format", "png");
