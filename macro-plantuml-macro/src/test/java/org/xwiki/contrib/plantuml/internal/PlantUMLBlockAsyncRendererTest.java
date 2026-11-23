@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
 import org.xwiki.rendering.block.MacroBlock;
@@ -36,6 +37,7 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link PlantUMLBlockAsyncRenderer}.
@@ -50,6 +52,9 @@ class PlantUMLBlockAsyncRendererTest
 
     @MockComponent
     private PlantUMLMacro macro;
+
+    @MockComponent
+    private PlantUMLConfiguration configuration;
 
     @Test
     void getIdDependsOnContent()
@@ -75,6 +80,15 @@ class PlantUMLBlockAsyncRendererTest
     {
         assertNotEquals(getId("Bob -> Alice", new PlantUMLMacroParameters(), false),
             getId("Bob -> Alice", new PlantUMLMacroParameters(), true));
+    }
+
+    @Test
+    void getIdDependsOnDefaultStyle()
+    {
+        List<String> idWithoutStyle = getId("Bob -> Alice", new PlantUMLMacroParameters(), false);
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray");
+
+        assertNotEquals(idWithoutStyle, getId("Bob -> Alice", new PlantUMLMacroParameters(), false));
     }
 
     private List<String> getId(String content, PlantUMLMacroParameters parameters, boolean restricted)

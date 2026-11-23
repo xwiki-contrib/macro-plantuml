@@ -37,6 +37,8 @@ public class PlantUMLAdministrationSectionPage extends AdministrationSectionPage
 
     private static final By SERVER_FIELD = By.name(SERVER_FIELD_NAME);
 
+    private static final By DEFAULT_STYLE_FIELD = By.name("PlantUML.PlantUMLConfigClass_0_defaultStyle");
+
     private static final By FORM = By.xpath("//form[.//input[@name='" + SERVER_FIELD_NAME + "']]");
 
     /**
@@ -73,6 +75,25 @@ public class PlantUMLAdministrationSectionPage extends AdministrationSectionPage
     public void setServerURL(String serverURL)
     {
         getForm().setFieldValue(SERVER_FIELD, serverURL);
+    }
+
+    /**
+     * @return the configured default diagram style (empty when none is configured)
+     * @since 2.6
+     */
+    public String getDefaultStyle()
+    {
+        return getForm().getFieldValue(DEFAULT_STYLE_FIELD);
+    }
+
+    /**
+     * @param defaultStyle the PlantUML lines to insert in the diagrams that don't set their own theme (an empty value
+     *     means that the diagrams are generated with the default PlantUML style)
+     * @since 2.6
+     */
+    public void setDefaultStyle(String defaultStyle)
+    {
+        getForm().setFieldValue(DEFAULT_STYLE_FIELD, defaultStyle);
     }
 
     /**

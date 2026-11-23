@@ -85,4 +85,15 @@ public interface PlantUMLConfiguration
     {
         return 0;
     }
+
+    /**
+     * @return the PlantUML style (e.g. a {@code !theme} line followed by {@code skinparam} lines) to insert just after
+     *         the {@code @start...} line of a diagram that doesn't set its own {@code !theme}, or null if none is
+     *         defined
+     * @since 2.6
+     */
+    default String getPlantUMLDefaultStyle()
+    {
+        return null;
+    }
 }

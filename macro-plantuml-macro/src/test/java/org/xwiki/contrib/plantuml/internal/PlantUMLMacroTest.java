@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.contrib.plantuml.PlantUMLConfiguration;
 import org.xwiki.contrib.plantuml.PlantUMLDiagramFormat;
+import org.xwiki.contrib.plantuml.PlantUMLDiagramType;
 import org.xwiki.contrib.plantuml.PlantUMLMacroParameters;
 import org.xwiki.contrib.plantuml.PlantUMLRenderer;
 import org.xwiki.model.reference.DocumentReference;
@@ -172,6 +173,64 @@ class PlantUMLMacroTest
         this.macro.executeSync("Bob -> Alice", parameters, false, true);
 
         verify(this.plantUMLRenderer).renderDiagram(anyString(), isNull(), eq(PlantUMLDiagramFormat.png));
+    }
+
+    @Test
+    void executeSyncWithDefaultStyle() throws Exception
+    {
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray\nskinparam shadowing false\n");
+        PlantUMLMacroParameters parameters = new PlantUMLMacroParameters();
+        parameters.setTitle("Greeting");
+
+        this.macro.executeSync("Bob -> Alice", parameters, false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startuml\n!theme bluegray\nskinparam shadowing false\n"
+            + "title Greeting\nBob -> Alice\n@enduml"), isNull(), any());
+    }
+
+    @Test
+    void executeSyncWithDefaultStyleWhenDiagramHasStartMarker() throws Exception
+    {
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray");
+
+        this.macro.executeSync("@startmindmap\n* root\n@endmindmap", new PlantUMLMacroParameters(), false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startmindmap\n!theme bluegray\n* root\n@endmindmap"),
+            isNull(), any());
+    }
+
+    @Test
+    void executeSyncWithDefaultStyleWhenDiagramSetsItsOwnTheme() throws Exception
+    {
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray");
+
+        this.macro.executeSync("  !theme plain\nBob -> Alice", new PlantUMLMacroParameters(), false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startuml\n!theme plain\nBob -> Alice\n@enduml"),
+            isNull(), any());
+    }
+
+    @Test
+    void executeSyncWithDefaultStyleWhenDiagramIsNotWrittenInPlantUMLLanguage() throws Exception
+    {
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray");
+        PlantUMLMacroParameters parameters = new PlantUMLMacroParameters();
+        parameters.setType(PlantUMLDiagramType.ditaa);
+
+        this.macro.executeSync("+---+\n| A |\n+---+", parameters, false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startditaa\n+---+\n| A |\n+---+\n@endditaa"), isNull(),
+            any());
+    }
+
+    @Test
+    void executeSyncWithDefaultStyleWhenDiagramHasASingleLine() throws Exception
+    {
+        when(this.configuration.getPlantUMLDefaultStyle()).thenReturn("!theme bluegray");
+
+        this.macro.executeSync("@startuml", new PlantUMLMacroParameters(), false, false);
+
+        verify(this.plantUMLRenderer).renderDiagram(eq("@startuml"), isNull(), any());
     }
 
     private PlantUMLMacroParameters getParametersWithServer()
